@@ -1,0 +1,7 @@
+# Minimal Supabase CLI-konfig for Familieknappen.
+# Sett project_id til ref-en fra Supabase-prosjektet ditt, eller kjør
+# «supabase link --project-ref <ref>» som fyller den inn.
+project_id = "familieknappen"
+
+[db]
+major_version = 17

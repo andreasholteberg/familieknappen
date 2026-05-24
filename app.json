@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Familieknappen",
+    "slug": "familieknappen",
+    "scheme": "familieknappen",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Familieknappen bruker kameraet slik at du kan ta bilde av en melding eller situasjon du vil spørre familien om.",
+        "NSPhotoLibraryUsageDescription": "Familieknappen trenger tilgang til bilder slik at du kan velge et bilde å sende til familien."
+      }
+    },
+    "android": {
+      "permissions": [
+        "CAMERA",
+        "READ_MEDIA_IMAGES"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Familieknappen lar deg velge et bilde å sende til familien.",
+          "cameraPermission": "Familieknappen lar deg ta bilde av en melding du vil spørre familien om."
+        }
+      ],
+      "expo-asset",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
