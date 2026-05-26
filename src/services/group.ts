@@ -55,3 +55,13 @@ export async function setPrimaryContact(groupId: string, userId: string): Promis
   });
   if (error) throw error;
 }
+
+/**
+ * Opprett en ny familiegruppe og meld inn innlogget bruker som primaerkontakt
+ * (atomisk via RPC). Setter ogsaa profiles.role = 'relative'. Returnerer group-id.
+ */
+export async function createFamilyGroup(name: string): Promise<string> {
+  const { data, error } = await supabase.rpc('create_family_group', { p_name: name });
+  if (error) throw error;
+  return data as string;
+}

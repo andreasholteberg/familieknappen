@@ -45,7 +45,7 @@ export default function RelativeDashboard() {
           <Text style={styles.alertTitle}>
             🔔 {open.length} ny{open.length > 1 ? 'e' : ''} forespørsel{open.length > 1 ? 'er' : ''}
           </Text>
-          <Text style={styles.alertBody}>{senior?.name} venter på svar før hun gjør noe.</Text>
+          <Text style={styles.alertBody}>{senior?.name} venter på svar før noe blir gjort.</Text>
         </Card>
       ) : null}
 

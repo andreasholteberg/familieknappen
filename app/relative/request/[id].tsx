@@ -5,7 +5,6 @@ import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Text, TextInput
 import { Card } from '@/components/Card';
 import { QuickReply } from '@/components/QuickReply';
 import { Screen } from '@/components/Screen';
-import { SmsPreview } from '@/components/SmsPreview';
 import { selectResponseForRequest, useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, radius, spacing } from '@/theme/theme';
 import type { ResponseType } from '@/types/models';
@@ -100,14 +99,14 @@ export default function RequestDetail() {
 
       {request.imageUri ? (
         <Image source={{ uri: request.imageUri }} style={styles.image} resizeMode="cover" />
-      ) : (
-        <SmsPreview />
-      )}
+      ) : null}
 
-      <Card style={{ marginTop: spacing(3.5) }}>
-        <Text style={styles.muted}>{senior?.name} spør:</Text>
-        <Text style={styles.question}>«{request.message}»</Text>
-      </Card>
+      {request.message ? (
+        <Card style={{ marginTop: spacing(3.5) }}>
+          <Text style={styles.muted}>{senior?.name} spør:</Text>
+          <Text style={styles.question}>«{request.message}»</Text>
+        </Card>
+      ) : null}
 
       {answered ? (
         <Card accent="ok">

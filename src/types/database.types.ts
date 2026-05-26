@@ -298,6 +298,7 @@ export type Database = {
       is_primary_contact: { Args: { g: string }; Returns: boolean };
       transfer_primary_contact: { Args: { p_group: string; p_new_user: string }; Returns: undefined };
       accept_group_invitation: { Args: { p_token: string }; Returns: Json };
+      create_family_group: { Args: { p_name: string }; Returns: string };
     };
     Enums: {
       app_role: AppRole;

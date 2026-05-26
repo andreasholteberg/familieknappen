@@ -129,6 +129,7 @@ interface AppState {
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
   setPendingInviteToken: (token: string | null) => void;
+  createGroup: (name: string) => Promise<void>;
   acceptInvite: (token: string) => Promise<{ familyGroupId: string; role: InvitedRole }>;
   createInvite: (input: { email: string; role: 'senior' | 'secondary_contact' }) => Promise<GroupInvitation>;
   loadInvitations: () => Promise<void>;
@@ -321,6 +322,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setPendingInviteToken: (token) => set({ pendingInviteToken: token }),
 
+  createGroup: async (name) => {
+    const groupId = await svc.group.createFamilyGroup(name);
+    set({ groupId });
+    await get().refresh();
+  },
+
   acceptInvite: async (token) => {
     const res = await svc.invitations.acceptInvitation(token);
     set({ groupId: res.familyGroupId, pendingInviteToken: null });
@@ -390,7 +397,13 @@ export const useAppStore = create<AppState>((set, get) => ({
           imageFailed = true;
         }
       }
-      await get().refresh();
+      // En feilet refresh skal IKKE markere sendingen som mislykket
+      // (forespoerselen er allerede lagret) - unngaar duplikat ved nytt forsok.
+      try {
+        await get().refresh();
+      } catch (err) {
+        logError('refresh etter createHelpRequest', err);
+      }
       return { ok: true, imageFailed };
     } catch (err) {
       logError('createHelpRequest', err);
@@ -412,7 +425,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   respondToRequest: async ({ requestId, relativeId, responseType, responseText }) => {
     const responderId = relativeId || get().currentUserId || '';
     await svc.helpResponses.respond({ requestId, responderId, responseType, responseText });
-    await get().refresh();
+    // Svaret er lagret; en feilet refresh skal ikke se ut som at svaret feilet.
+    try {
+      await get().refresh();
+    } catch (err) {
+      logError('refresh etter respondToRequest', err);
+    }
   },
 
   markAnswerSeen: (requestId) => {

@@ -13,6 +13,12 @@ import { supabase } from '@/lib/supabase';
 /** Sender en magisk lenke til e-posten. emailRedirectTo må være en app-deep-link. */
 export async function sendMagicLink(email: string): Promise<void> {
   const emailRedirectTo = Linking.createURL('auth-callback');
+  if (__DEV__) {
+    // Skriv ut noyaktig redirect-URI slik at den kan legges i
+    // Supabase -> Authentication -> URL Configuration -> Redirect URLs.
+    // eslint-disable-next-line no-console
+    console.log('[Familieknappen] Magisk lenke redirect-URI:', emailRedirectTo);
+  }
   const { error } = await supabase.auth.signInWithOtp({
     email: email.trim().toLowerCase(),
     options: { emailRedirectTo },

@@ -24,7 +24,7 @@ export default function RelativeCalendar() {
   return (
     <Screen>
       <Text style={styles.intro}>
-        Avtaler for {senior?.name}. Hun ser disse stort under «Min dag».
+        Avtaler for {senior?.name}. Disse vises stort under «Min dag».
       </Text>
 
       {sorted.length > 0 ? (

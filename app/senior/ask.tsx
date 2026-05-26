@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useShallow } from 'zustand/react/shallow';
 
 import { Avatar } from '@/components/Avatar';
@@ -16,7 +16,7 @@ import {
 import { colors, fontSize, radius, spacing } from '@/theme/theme';
 import { pickFromLibrary, takePhoto } from '@/utils/pickImage';
 
-const DEFAULT_MESSAGE = 'Er denne meldingen ekte?';
+const MESSAGE_PLACEHOLDER = 'Skriv en kort melding (valgfritt) – f.eks. «Er denne ekte?»';
 
 /** Stegindikator (3 trinn). */
 function Steps({ step }: { step: number }) {
@@ -44,6 +44,7 @@ export default function AskFamily() {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [imageFailed, setImageFailed] = useState(false);
+  const [message, setMessage] = useState('');
 
   const userById = (id?: string) => users.find((u) => u.id === id);
 
@@ -74,8 +75,8 @@ export default function AskFamily() {
   };
 
   const next = () => {
-    if (step === 1 && !hasPhoto) {
-      Alert.alert('Ta et bilde først', 'Ta bilde av meldingen du lurer på.');
+    if (step === 1 && !message.trim() && !hasPhoto) {
+      Alert.alert('Legg til noe først', 'Skriv en kort melding eller ta et bilde.');
       return;
     }
     setStep((s) => Math.min(3, s + 1));
@@ -95,7 +96,7 @@ export default function AskFamily() {
     setSendError(null);
     const result = await createHelpRequest({
       recipientId: contactId,
-      message: DEFAULT_MESSAGE,
+      message: message.trim(),
       imageUri: imageUri ?? undefined,
     });
     setSending(false);
@@ -140,10 +141,21 @@ export default function AskFamily() {
 
       {step === 1 ? (
         <View>
-          <Text style={styles.stepTitle}>Trinn 1: Ta bilde</Text>
+          <Text style={styles.stepTitle}>Trinn 1: Hva lurer du på?</Text>
           <Text style={styles.stepHelp}>
-            Ta et bilde av meldingen, brevet eller skjermen du lurer på.
+            Skriv en kort melding, ta et bilde – eller begge deler.
           </Text>
+
+          <TextInput
+            style={styles.messageInput}
+            value={message}
+            onChangeText={setMessage}
+            placeholder={MESSAGE_PLACEHOLDER}
+            placeholderTextColor={colors.inkFaint}
+            multiline
+            textAlignVertical="top"
+            accessibilityLabel="Melding til familien"
+          />
 
           {hasPhoto ? (
             <View>
@@ -158,12 +170,11 @@ export default function AskFamily() {
               <Pressable style={styles.retake} onPress={handleTake}>
                 <Text style={styles.retakeText}>📷 Ta nytt bilde</Text>
               </Pressable>
-              <BigButton label="Neste →" variant="primary" compact onPress={next} />
             </View>
           ) : (
             <View>
-              <BigButton icon="📷" label="Ta bilde" variant="primary" onPress={handleTake} />
-              <BigButton icon="🖼️" label="Velg bilde" variant="day" onPress={handlePick} />
+              <BigButton icon="📷" label="Ta bilde" variant="day" compact onPress={handleTake} />
+              <BigButton icon="🖼️" label="Velg bilde" variant="day" compact onPress={handlePick} />
               {__DEV__ ? (
                 <Pressable style={styles.exampleLink} onPress={useExample}>
                   <Text style={styles.exampleText}>Bruk eksempelbilde (kun for utvikling)</Text>
@@ -171,6 +182,8 @@ export default function AskFamily() {
               ) : null}
             </View>
           )}
+
+          <BigButton label="Neste →" variant="primary" onPress={next} style={{ marginTop: spacing(3) }} />
         </View>
       ) : null}
 
@@ -211,14 +224,18 @@ export default function AskFamily() {
         <View>
           <Text style={styles.stepTitle}>Trinn 3: Send</Text>
           <Text style={styles.stepHelp}>
-            Vi sender bildet til {userById(contactId)?.name}. {userById(contactId)?.name} ser på det og svarer deg.
+            Vi sender dette til {userById(contactId)?.name}. {userById(contactId)?.name} ser på det og svarer deg.
           </Text>
 
           {imageUri ? (
             <Image source={{ uri: imageUri }} style={styles.photo} resizeMode="cover" />
-          ) : (
-            <SmsPreview />
-          )}
+          ) : null}
+
+          {message.trim() ? (
+            <Card style={{ marginTop: spacing(3) }}>
+              <Text style={styles.messagePreview}>«{message.trim()}»</Text>
+            </Card>
+          ) : null}
 
           <Card style={{ marginTop: spacing(3) }}>
             <Text style={styles.sendTo}>
@@ -261,6 +278,19 @@ const styles = StyleSheet.create({
 
   stepTitle: { fontSize: fontSize.title, fontWeight: '800', color: colors.ink, marginBottom: spacing(1.5) },
   stepHelp: { fontSize: fontSize.body, color: colors.inkSoft, marginBottom: spacing(5), lineHeight: 28 },
+  messageInput: {
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radius.m,
+    padding: spacing(4),
+    fontSize: fontSize.body,
+    color: colors.ink,
+    backgroundColor: colors.surface,
+    minHeight: 110,
+    marginBottom: spacing(4),
+    lineHeight: 28,
+  },
+  messagePreview: { fontSize: fontSize.lg, color: colors.ink, lineHeight: 28 },
 
   photo: { width: '100%', aspectRatio: 3 / 4, borderRadius: radius.m, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   caption: { textAlign: 'center', color: colors.inkFaint, fontSize: fontSize.sm, marginTop: spacing(2) },

@@ -70,7 +70,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .filter((id: string) => id !== seniorId);
 
     title = `${seniorName} ber om hjelp`;
-    body = `${seniorName} ber om hjelp før hun svarer.`;
+    body = `${seniorName} venter på svar fra familien.`;
   } else if (payload.table === 'help_responses') {
     logType = 'help_response';
     relatedHelpRequestId = record.help_request_id as string;

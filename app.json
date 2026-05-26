@@ -19,9 +19,11 @@
     },
     "android": {
       "permissions": [
-        "CAMERA",
-        "READ_MEDIA_IMAGES"
-      ]
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.ahdigital.familieknappen"
     },
     "plugins": [
       "expo-router",
@@ -33,10 +35,18 @@
         }
       ],
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8eddc45e-a19e-47ea-8a74-62bf07543f7e"
+      }
+    },
+    "owner": "ah-digital"
   }
 }

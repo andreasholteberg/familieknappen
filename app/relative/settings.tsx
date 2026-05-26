@@ -297,7 +297,7 @@ export default function RelativeSettings() {
       <View style={styles.disclaimer}>
         <Text style={styles.disclaimerStrong}>Dette er assistanse, ikke en garanti.</Text>
         <Text style={styles.disclaimerText}>
-          Familieknappen hjelper {senior?.name} med å spørre noen hun stoler på før hun svarer eller
+          Familieknappen hjelper {senior?.name} med å spørre noen man stoler på før man svarer eller
           handler. Appen kan ikke love å avsløre svindel sikkert. Bruk den som en ekstra trygghet –
           ikke som en fasit. Er dere i tvil, ta kontakt med banken, Posten eller politiet direkte.
         </Text>

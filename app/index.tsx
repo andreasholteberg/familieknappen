@@ -1,4 +1,4 @@
-import { Redirect, useRouter } from 'expo-router';
+import { Redirect } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,10 +15,8 @@ import { colors, fontSize, spacing } from '@/theme/theme';
  *  - feil/ikke konfig → tydelig feilmelding (ingen stille mock-fallback)
  */
 export default function Index() {
-  const router = useRouter();
   const status = useAppStore((s) => s.status);
   const currentUser = useAppStore(selectCurrentUser);
-  const signOut = useAppStore((s) => s.signOut);
   const errorMessage = useAppStore((s) => s.errorMessage);
   const pendingInviteToken = useAppStore((s) => s.pendingInviteToken);
 
@@ -53,15 +51,7 @@ export default function Index() {
   }
 
   if (!currentUser) {
-    return (
-      <SafeAreaView style={styles.center}>
-        <Text style={styles.title}>Ingen familiegruppe ennå</Text>
-        <Text style={styles.muted}>
-          Kontoen din er ikke koblet til en familiegruppe. Be en pårørende om å legge deg til.
-        </Text>
-        <BigButton label="Logg ut" variant="day" compact onPress={async () => { await signOut(); router.replace('/'); }} />
-      </SafeAreaView>
-    );
+    return <Redirect href="/onboarding" />;
   }
 
   return <Redirect href={currentUser.role === 'senior' ? '/senior' : '/relative'} />;

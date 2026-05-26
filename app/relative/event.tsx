@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { DateTimeField } from '@/components/DateTimeField';
 import { Screen } from '@/components/Screen';
 import { selectSenior, useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, radius, spacing } from '@/theme/theme';
@@ -66,12 +67,10 @@ export default function EventForm() {
 
       <View style={styles.rowFields}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.label}>Dato (ÅÅÅÅ-MM-DD)</Text>
-          <TextInput style={styles.input} value={date} onChangeText={setDate} placeholder="2026-05-21" placeholderTextColor={colors.inkFaint} autoCapitalize="none" />
+          <DateTimeField mode="date" label="Dato" value={date} onChange={setDate} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.label}>Klokkeslett (TT:MM)</Text>
-          <TextInput style={styles.input} value={time} onChangeText={setTime} placeholder="13:00" placeholderTextColor={colors.inkFaint} />
+          <DateTimeField mode="time" label="Klokkeslett" value={time} onChange={setTime} />
         </View>
       </View>
 
