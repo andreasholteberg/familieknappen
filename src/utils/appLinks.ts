@@ -6,7 +6,10 @@ const GITHUB_PAGES_BASE_PATH = '/familieknappen';
 type CreateUrlOptions = Parameters<typeof Linking.createURL>[1];
 
 export function createAppUrl(path: string, options?: CreateUrlOptions): string {
-  const url = Linking.createURL(path, options);
+  const url =
+    Platform.OS === 'web'
+      ? Linking.createURL(path, options)
+      : Linking.createURL(path, { ...(options ?? {}), isTripleSlashed: true });
 
   if (
     Platform.OS !== 'web' ||
