@@ -18,6 +18,13 @@ import type { Database } from '@/types/database.types';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+const staticRenderStorage = {
+  getItem: async () => null,
+  setItem: async () => undefined,
+  removeItem: async () => undefined,
+};
+const authStorage =
+  Platform.OS === 'web' && typeof window === 'undefined' ? staticRenderStorage : AsyncStorage;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   // Tydelig, hard feil i stedet for stille fallback til mockdata.
@@ -30,7 +37,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: AsyncStorage,
+    storage: authStorage,
     autoRefreshToken: true,
     persistSession: true,
     // Vi bruker PKCE + manuell deep link-håndtering i appen, ikke URL i nettleser.

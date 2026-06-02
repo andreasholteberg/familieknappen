@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import * as Linking from 'expo-linking';
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -9,6 +8,7 @@ import { Screen } from '@/components/Screen';
 import { selectCurrentUser, selectSenior, useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, radius, spacing } from '@/theme/theme';
 import type { GroupInvitation } from '@/types/models';
+import { createAppUrl } from '@/utils/appLinks';
 
 const SCOPE_LABEL: Record<string, string> = {
   help_requests: 'Forespørsler',
@@ -84,7 +84,7 @@ export default function RelativeSettings() {
   const [sendingInvite, setSendingInvite] = useState(false);
 
   const inviteLink = inviteResult
-    ? Linking.createURL('invite', { queryParams: { token: inviteResult.token } })
+    ? createAppUrl('invite', { queryParams: { token: inviteResult.token } })
     : '';
 
   const sendInvite = async () => {

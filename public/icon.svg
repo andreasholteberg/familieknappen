@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Familieknappen icon">
+  <rect width="512" height="512" rx="96" fill="#2b6cb0"/>
+  <circle cx="256" cy="222" r="116" fill="#ffffff"/>
+  <path d="M146 330c34-48 70-72 110-72s76 24 110 72c16 23-.5 54-28 54H174c-27.5 0-44-31-28-54Z" fill="#dce9f7"/>
+  <path d="M214 205c0-29 23-52 52-52s52 23 52 52-23 52-52 52-52-23-52-52Z" fill="#2f855a"/>
+</svg>

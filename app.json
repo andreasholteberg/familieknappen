@@ -6,6 +6,9 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "web": {
+      "output": "static"
+    },
     "newArchEnabled": true,
     "assetBundlePatterns": [
       "**/*"
@@ -39,7 +42,8 @@
       "@react-native-community/datetimepicker"
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "baseUrl": "/familieknappen"
     },
     "extra": {
       "router": {},
