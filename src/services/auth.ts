@@ -7,9 +7,49 @@
 
 import type { Session } from '@supabase/supabase-js';
 import * as Linking from 'expo-linking';
+import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 import { createAppUrl } from '@/utils/appLinks';
+
+type AuthParams = {
+  code: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+};
+
+const firstString = (value: unknown): string | null => {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value) && typeof value[0] === 'string') return value[0];
+  return null;
+};
+
+const readAuthParams = (url: string): AuthParams => {
+  try {
+    const parsed = new URL(url);
+    const hashParams = new URLSearchParams(parsed.hash.startsWith('#') ? parsed.hash.slice(1) : '');
+    return {
+      code: parsed.searchParams.get('code') ?? hashParams.get('code'),
+      accessToken: hashParams.get('access_token') ?? parsed.searchParams.get('access_token'),
+      refreshToken: hashParams.get('refresh_token') ?? parsed.searchParams.get('refresh_token'),
+    };
+  } catch {
+    const parsed = Linking.parse(url);
+    const hashParams = new URLSearchParams(url.split('#')[1] ?? '');
+    return {
+      code: firstString(parsed.queryParams?.code) ?? hashParams.get('code'),
+      accessToken: hashParams.get('access_token') ?? firstString(parsed.queryParams?.access_token),
+      refreshToken: hashParams.get('refresh_token') ?? firstString(parsed.queryParams?.refresh_token),
+    };
+  }
+};
+
+const logAuthDebug = (message: string, detail?: string): void => {
+  if (!__DEV__) return;
+  // Keep auth logs token-free. Only log flow type / path-level information.
+  // eslint-disable-next-line no-console
+  console.log(`[Familieknappen] Auth: ${message}${detail ? ` (${detail})` : ''}`);
+};
 
 /** Sender en magisk lenke til e-posten. emailRedirectTo må være en app-deep-link. */
 export async function sendMagicLink(email: string): Promise<void> {
@@ -27,14 +67,32 @@ export async function sendMagicLink(email: string): Promise<void> {
   if (error) throw error;
 }
 
-/** Fullfør innlogging fra en åpnet deep link (?code=… for PKCE). */
-export async function completeSignInFromUrl(url: string): Promise<boolean> {
-  const parsed = Linking.parse(url);
-  const code = parsed.queryParams?.code;
-  if (!code) return false;
-  const { error } = await supabase.auth.exchangeCodeForSession(String(code));
-  if (error) throw error;
-  return true;
+/** Fullfor innlogging fra callback-lenke: PKCE ?code=... eller hash-tokenflow. */
+export async function completeSignInFromUrl(url: string): Promise<Session | null> {
+  const { code, accessToken, refreshToken } = readAuthParams(url);
+
+  if (code) {
+    logAuthDebug('behandler PKCE code callback');
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) throw error;
+    return data.session ?? (await getSession());
+  }
+
+  if (accessToken && refreshToken) {
+    logAuthDebug('behandler hash-token callback');
+    const { data, error } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+    if (error) throw error;
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+    }
+    return data.session ?? (await getSession());
+  }
+
+  logAuthDebug('callback uten auth-parametere');
+  return null;
 }
 
 export async function getSession(): Promise<Session | null> {

@@ -68,8 +68,12 @@ https://andreasholteberg.github.io/familieknappen
 Redirect URLs:
 http://localhost:8081
 http://localhost:8081/**
+http://localhost:8081/auth-callback
+http://localhost:8081/invite
 https://andreasholteberg.github.io/familieknappen
 https://andreasholteberg.github.io/familieknappen/**
+https://andreasholteberg.github.io/familieknappen/auth-callback
+https://andreasholteberg.github.io/familieknappen/invite
 familieknappen://auth-callback
 familieknappen://invite
 ```
