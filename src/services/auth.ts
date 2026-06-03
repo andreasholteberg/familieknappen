@@ -67,6 +67,16 @@ export async function sendMagicLink(email: string): Promise<void> {
   if (error) throw error;
 }
 
+/** Midlertidig testinnlogging for preview/development. Bruker ikke service role. */
+export async function signInWithPassword(email: string, password: string): Promise<Session | null> {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password,
+  });
+  if (error) throw error;
+  return data.session ?? (await getSession());
+}
+
 /** Fullfor innlogging fra callback-lenke: PKCE ?code=... eller hash-tokenflow. */
 export async function completeSignInFromUrl(url: string): Promise<Session | null> {
   const { code, accessToken, refreshToken } = readAuthParams(url);

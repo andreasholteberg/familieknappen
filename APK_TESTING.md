@@ -43,15 +43,56 @@ https://andreasholteberg.github.io/familieknappen/invite
 Når en faktisk APK er installert, blir native deep links relevante. Da kan appen bruke:
 
 ```text
-familieknappen://auth-callback
-familieknappen://invite
+familieknappen:///auth-callback
+familieknappen:///invite
 ```
 
-Disse scheme-lenkene er først nyttige når Android-appen faktisk er installert og registrerer `familieknappen` som scheme. GitHub Pages-testen bruker ikke disse til web-login.
+Triple-slash (`///`) er nødvendig fordi Expo Router matcher på **path**, ikke host.
+Med dobbel-slash (`//`) tolker Android `auth-callback` som host og path blir tom,
+noe som kan føre til at Expo Router ikke finner ruten.
+
+Disse scheme-lenkene er først nyttige når Android-appen faktisk er installert og
+registrerer `familieknappen` som scheme. GitHub Pages-testen bruker ikke disse til
+web-login.
+
+## Midlertidig testinnlogging
+
+For APK-testing kan preview/development-builds vise en egen boks merket
+`Testinnlogging - kun preview`. Dette er kun for å slippe Supabase email rate
+limit mens magic link/deep link testes separat.
+
+Testinnloggingen bruker vanlig Supabase e-post/passord med anon/public key.
+Den bruker ikke service role key, og passord skal aldri legges i repoet.
+
+For å aktivere i EAS preview må disse variablene settes i EAS preview
+environment:
+
+```text
+EXPO_PUBLIC_APP_ENV=preview
+EXPO_PUBLIC_ENABLE_TEST_LOGIN=true
+EXPO_PUBLIC_TEST_LOGIN_EMAILS=andreasholteberg@gmail.com,hholteberg@gmail.com
+```
+
+I production skal `EXPO_PUBLIC_ENABLE_TEST_LOGIN` ikke settes til `true`, og
+`EXPO_PUBLIC_APP_ENV` skal ikke være `preview` eller `development`.
+
+Supabase Auth må ha e-post/passord-brukere for testkontoene. Opprett eller
+oppdater testbrukerne i Supabase Dashboard -> Authentication -> Users, og sett
+et midlertidig passord der. Ikke del passordet i chat eller commit det.
+
+Bruk:
+
+1. Installer preview APK.
+2. Åpne appen.
+3. Bruk boksen `Testinnlogging - kun preview`.
+4. Logg inn med en av e-postene i `EXPO_PUBLIC_TEST_LOGIN_EMAILS` og det
+   midlertidige passordet fra Supabase.
+5. Test appflyten uten å sende nye magic links.
 
 Før APK-test:
 
 - Sjekk at EAS preview-build får `EXPO_PUBLIC_SUPABASE_URL` og `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+- Hvis testinnlogging skal brukes, sjekk at EAS preview-build også får `EXPO_PUBLIC_APP_ENV`, `EXPO_PUBLIC_ENABLE_TEST_LOGIN` og `EXPO_PUBLIC_TEST_LOGIN_EMAILS`.
 - Sjekk at Supabase Redirect URLs inneholder både web-callbacks og native scheme-lenker.
 - Sjekk at Android package/scheme i `app.json` er riktig.
 - Kjør `npm run typecheck` og `npm run build:web` før du bygger.
