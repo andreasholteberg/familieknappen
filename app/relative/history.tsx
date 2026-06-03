@@ -30,6 +30,10 @@ export default function History() {
     <Screen>
       <Text style={styles.intro}>Alle forespørsler og svar.</Text>
 
+      {sorted.length === 0 ? (
+        <Text style={styles.muted}>Ingen forespørsler ennå.</Text>
+      ) : null}
+
       {sorted.map((r) => {
         const resp = responseFor(r.id);
         const by = resp ? users.find((u) => u.id === resp.relativeId) : undefined;
@@ -79,4 +83,5 @@ const styles = StyleSheet.create({
   answer: { fontSize: fontSize.sm, color: colors.inkSoft, marginTop: spacing(1.5) },
   answerBold: { fontWeight: '700', color: colors.ink },
   pending: { fontSize: fontSize.sm, color: colors.attention, marginTop: spacing(1.5) },
+  muted: { fontSize: fontSize.md, color: colors.inkFaint, paddingVertical: spacing(2) },
 });

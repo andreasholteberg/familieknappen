@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as svc from '@/services';
 import { useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, spacing } from '@/theme/theme';
+import { humanizeAuthError } from '@/utils/authErrors';
 
 const firstParam = (value: string | string[] | undefined): string | null => {
   if (typeof value === 'string') return value;
@@ -78,7 +79,7 @@ export default function AuthCallback() {
           console.warn('[Familieknappen] Auth callback feilet:', (err as Error)?.message);
         }
         useAppStore.setState({ status: 'signedOut', session: null, currentUserId: null });
-        setError((err as Error)?.message ?? 'Kunne ikke fullfoere innloggingen.');
+        setError(humanizeAuthError(err, 'Kunne ikke fullføre innloggingen. Prøv å be om en ny lenke.'));
       }
     })();
   }, [incomingUrl, routeCallbackUrl, router]);

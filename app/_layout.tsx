@@ -7,8 +7,9 @@ import { useAppStore } from '@/store/useAppStore';
 import { colors } from '@/theme/theme';
 
 /**
- * Rot-oppsett. Starter auth-livssyklusen en gang. Callback-ruten
- * (app/auth-callback.tsx) fullfoerer magisk lenke.
+ * Rot-oppsett. Starter auth-livssyklusen én gang. Callback-ruten
+ * (app/auth-callback.tsx) fullfører magisk lenke. Logoen vises i hver Stack
+ * sitt header (via HeaderTitle) og som visuelt anker på sign-in/onboarding.
  */
 export default function RootLayout() {
   useEffect(() => {

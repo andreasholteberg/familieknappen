@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { RelativeTabs } from '@/components/RelativeTabs';
 import { Screen } from '@/components/Screen';
@@ -20,6 +20,17 @@ export default function RelativeCalendar() {
   const senior = useAppStore(selectSenior);
 
   const sorted = [...events].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+
+  const confirmDelete = (id: string, title: string) => {
+    Alert.alert(
+      'Slett avtale?',
+      `«${title}» blir borte fra kalenderen.`,
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        { text: 'Slett', style: 'destructive', onPress: () => deleteEvent(id) },
+      ],
+    );
+  };
 
   return (
     <Screen>
@@ -41,10 +52,22 @@ export default function RelativeCalendar() {
                 {e.description ? <Text style={styles.desc}>{e.description}</Text> : null}
               </View>
               <View style={styles.actions}>
-                <Pressable style={styles.iconBtn} onPress={() => router.push({ pathname: '/relative/event', params: { id: e.id } })}>
+                <Pressable
+                  style={styles.iconBtn}
+                  onPress={() => router.push({ pathname: '/relative/event', params: { id: e.id } })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Rediger ${e.title}`}
+                  hitSlop={8}
+                >
                   <Text style={styles.iconBtnText}>Rediger</Text>
                 </Pressable>
-                <Pressable style={[styles.iconBtn, styles.del]} onPress={() => deleteEvent(e.id)}>
+                <Pressable
+                  style={[styles.iconBtn, styles.del]}
+                  onPress={() => confirmDelete(e.id, e.title)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Slett ${e.title}`}
+                  hitSlop={8}
+                >
                   <Text style={[styles.iconBtnText, styles.delText]}>Slett</Text>
                 </Pressable>
               </View>

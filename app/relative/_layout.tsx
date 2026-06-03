@@ -1,10 +1,11 @@
 import { Stack } from 'expo-router';
 import React from 'react';
 
+import { HeaderTitle } from '@/components/HeaderTitle';
 import { RoleSwitchButton } from '@/components/RoleSwitchButton';
 import { colors } from '@/theme/theme';
 
-/** Pårørendes navigasjonsstabel. Mer informasjonstett enn senior-siden. */
+/** Pårørendes navigasjonsstabel. Logo + tittel i headeren. */
 export default function RelativeLayout() {
   return (
     <Stack
@@ -13,7 +14,7 @@ export default function RelativeLayout() {
         headerStyle: { backgroundColor: colors.surface },
         headerShadowVisible: false,
         headerTintColor: colors.brandDark,
-        headerTitleStyle: { fontWeight: '700', fontSize: 18 },
+        headerTitle: ({ children }) => <HeaderTitle variant="relative">{children}</HeaderTitle>,
         headerBackTitle: 'Tilbake',
         headerRight: () => <RoleSwitchButton />,
         contentStyle: { backgroundColor: colors.bgScreen },

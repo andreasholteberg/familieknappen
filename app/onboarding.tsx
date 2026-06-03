@@ -4,6 +4,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BigButton } from '@/components/BigButton';
+import { Logo } from '@/components/Logo';
 import { selectCurrentUser, useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, radius, spacing } from '@/theme/theme';
 
@@ -57,6 +58,9 @@ export default function Onboarding() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
+        <View style={styles.logoBlock}>
+          <Logo size={88} />
+        </View>
         <Text style={styles.title}>Velkommen 👋</Text>
         <Text style={styles.subtitle}>
           Opprett en familiegruppe for å komme i gang. Du blir kontaktperson, og kan invitere
@@ -94,6 +98,7 @@ export default function Onboarding() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bgScreen },
+  logoBlock: { alignItems: 'center', marginBottom: spacing(4) },
   center: {
     flex: 1,
     backgroundColor: colors.bgScreen,

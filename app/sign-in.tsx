@@ -1,12 +1,14 @@
 import { Redirect } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BigButton } from '@/components/BigButton';
+import { Logo } from '@/components/Logo';
 import * as svc from '@/services';
 import { useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, radius, spacing } from '@/theme/theme';
+import { humanizeAuthError } from '@/utils/authErrors';
 
 const appEnv = process.env.EXPO_PUBLIC_APP_ENV?.toLowerCase();
 const testLoginEmails = (process.env.EXPO_PUBLIC_TEST_LOGIN_EMAILS ?? '')
@@ -16,6 +18,7 @@ const testLoginEmails = (process.env.EXPO_PUBLIC_TEST_LOGIN_EMAILS ?? '')
 const testLoginEnabled =
   process.env.EXPO_PUBLIC_ENABLE_TEST_LOGIN === 'true' &&
   (__DEV__ || appEnv === 'preview' || appEnv === 'development');
+const previewBuildLabel = process.env.EXPO_PUBLIC_PREVIEW_BUILD_LABEL ?? 'Preview build';
 
 /**
  * Innlogging med magisk lenke (passordløst). Pårørende skriver inn e-posten,
@@ -49,7 +52,7 @@ export default function SignIn() {
       await svc.auth.sendMagicLink(value);
       setSentTo(value);
     } catch (e) {
-      setError((e as Error)?.message ?? 'Kunne ikke sende lenken. Prøv igjen.');
+      setError(humanizeAuthError(e, 'Kunne ikke sende lenken. Prøv igjen.'));
     } finally {
       setSending(false);
     }
@@ -90,7 +93,7 @@ export default function SignIn() {
       });
       await useAppStore.getState().refresh();
     } catch (e) {
-      setError((e as Error)?.message ?? 'Kunne ikke logge inn med testbruker.');
+      setError(humanizeAuthError(e, 'Kunne ikke logge inn med testbruker.'));
     } finally {
       setTestSigningIn(false);
     }
@@ -99,7 +102,11 @@ export default function SignIn() {
   if (sentTo) {
     return (
       <SafeAreaView style={styles.safe}>
-        <View style={styles.container}>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+        >
           <Text style={styles.check}>📧</Text>
           <Text style={styles.title}>Sjekk e-posten din</Text>
           <Text style={styles.subtitle}>
@@ -107,14 +114,21 @@ export default function SignIn() {
             på lenken for å logge inn.
           </Text>
           <BigButton label="Bruk en annen e-post" variant="day" compact onPress={() => setSentTo(null)} />
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.logoBlock}>
+          <Logo size={88} />
+        </View>
         <Text style={styles.title}>Familieknappen</Text>
         <Text style={styles.subtitle}>
           Logg inn med e-posten din. Du får en lenke – ingen passord å huske.
@@ -148,6 +162,7 @@ export default function SignIn() {
         {testLoginEnabled ? (
           <View style={styles.testPanel}>
             <Text style={styles.testTitle}>Testinnlogging – kun preview</Text>
+            <Text style={styles.buildLabel}>{previewBuildLabel}</Text>
             <Text style={styles.testHelp}>
               Bruk bare definerte testbrukere. Magic link er fortsatt hovedinnloggingen.
             </Text>
@@ -198,14 +213,21 @@ export default function SignIn() {
         <Text style={styles.note}>
           Familieknappen er assistanse, ikke en garanti. Er du usikker på noe – spør noen du stoler på.
         </Text>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bgScreen },
-  container: { flex: 1, paddingHorizontal: spacing(6), justifyContent: 'center' },
+  scroll: { flex: 1, backgroundColor: colors.bgScreen },
+  logoBlock: { alignItems: 'center', marginBottom: spacing(4) },
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: spacing(6),
+    paddingVertical: spacing(8),
+  },
   check: { fontSize: 52, textAlign: 'center', marginBottom: spacing(2) },
   title: { fontSize: fontSize.title, fontWeight: '800', color: colors.brandDark, textAlign: 'center' },
   subtitle: {
@@ -240,6 +262,7 @@ const styles = StyleSheet.create({
     padding: spacing(4),
   },
   testTitle: { color: colors.attention, fontSize: fontSize.md, fontWeight: '800' },
+  buildLabel: { color: colors.inkFaint, fontSize: fontSize.sm, marginTop: spacing(0.5) },
   testHelp: { color: colors.inkSoft, fontSize: fontSize.sm, lineHeight: 20, marginTop: spacing(1.5), marginBottom: spacing(3) },
   testLabel: { color: colors.inkSoft, fontSize: fontSize.sm, fontWeight: '700', marginBottom: spacing(1) },
   testInput: {

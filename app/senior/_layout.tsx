@@ -1,10 +1,11 @@
 import { Stack } from 'expo-router';
 import React from 'react';
 
+import { HeaderTitle } from '@/components/HeaderTitle';
 import { RoleSwitchButton } from '@/components/RoleSwitchButton';
 import { colors } from '@/theme/theme';
 
-/** Seniorens navigasjonsstabel – rolig, lys topplinje med stor tittel. */
+/** Seniorens navigasjonsstabel – rolig, lys topplinje med logo + stor tittel. */
 export default function SeniorLayout() {
   return (
     <Stack
@@ -13,7 +14,7 @@ export default function SeniorLayout() {
         headerStyle: { backgroundColor: colors.bgScreen },
         headerShadowVisible: false,
         headerTintColor: colors.brandDark,
-        headerTitleStyle: { fontWeight: '700', fontSize: 20 },
+        headerTitle: ({ children }) => <HeaderTitle variant="senior">{children}</HeaderTitle>,
         headerBackTitle: 'Tilbake',
         headerRight: () => <RoleSwitchButton />,
         contentStyle: { backgroundColor: colors.bgScreen },

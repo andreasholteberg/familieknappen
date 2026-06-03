@@ -3,7 +3,7 @@
     "name": "Familieknappen",
     "slug": "familieknappen",
     "scheme": "familieknappen",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "web": {
@@ -27,6 +27,7 @@
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.ahdigital.familieknappen",
+      "versionCode": 2,
       "intentFilters": [
         {
           "action": "VIEW",
