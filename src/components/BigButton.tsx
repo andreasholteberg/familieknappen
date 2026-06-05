@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
 
-import { colors, fontSize, radius, shadow, spacing } from '@/theme/theme';
+import { colors, fontFamily, fontSize, radius, shadow, spacing } from '@/theme/theme';
 
 type Variant = 'primary' | 'call' | 'day' | 'attention';
 
@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
   iconCompact: { fontSize: 28, marginBottom: spacing(1) },
   label: {
     color: colors.white,
+    fontFamily: fontFamily.heavy,
     fontSize: fontSize.button,
     fontWeight: '800',
     textAlign: 'center',
@@ -82,6 +83,7 @@ const styles = StyleSheet.create({
   hint: {
     color: colors.white,
     opacity: 0.92,
+    fontFamily: fontFamily.bold,
     fontSize: fontSize.md,
     fontWeight: '600',
     marginTop: spacing(2),

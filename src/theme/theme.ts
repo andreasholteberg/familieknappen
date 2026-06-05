@@ -62,6 +62,12 @@ export const fontWeight = {
   heavy: '800',
 } as const;
 
+export const fontFamily = {
+  regular: 'Nunito_400Regular',
+  bold: 'Nunito_700Bold',
+  heavy: 'Nunito_800ExtraBold',
+} as const;
+
 export const shadow = {
   card: {
     shadowColor: '#1f2a37',
@@ -79,5 +85,5 @@ export const shadow = {
   },
 } as const;
 
-export const theme = { colors, radius, spacing, fontSize, fontWeight, shadow };
+export const theme = { colors, radius, spacing, fontSize, fontWeight, fontFamily, shadow };
 export type Theme = typeof theme;

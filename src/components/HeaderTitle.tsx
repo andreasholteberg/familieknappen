@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Logo } from '@/components/Logo';
-import { colors } from '@/theme/theme';
+import { colors, fontFamily } from '@/theme/theme';
 
 interface HeaderTitleProps {
   children?: React.ReactNode;
@@ -24,5 +24,5 @@ export function HeaderTitle({ children, variant = 'relative' }: HeaderTitleProps
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  text: { color: colors.brandDark, fontWeight: '700', flexShrink: 1 },
+  text: { color: colors.brandDark, fontFamily: fontFamily.bold, fontWeight: '700', flexShrink: 1 },
 });
