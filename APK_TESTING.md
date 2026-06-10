@@ -6,9 +6,13 @@ Dette dokumentet er en nøktern neste-fase-sjekkliste. Målet er kontrollert tes
 
 - GitHub Pages web-test kjører på `https://andreasholteberg.github.io/familieknappen`.
 - Lokal web-test kjører normalt på `http://localhost:8081`.
-- Supabase magic link fungerer på web via `https://andreasholteberg.github.io/familieknappen/auth-callback`.
+- Pilotinnlogging bruker 6-sifret e-postkode via Supabase OTP.
+- Supabase sender auth-e-post via Resend SMTP.
+- Auth-avsender er `Familieknappen <noreply@familieknappen.app>`.
+- Magic link/deep link er bevart som backup, men er ikke hovedflyt i pilot.
 - Expo web-export bygger statisk til `dist/` med base path `/familieknappen`.
 - Supabase URL og anon/publishable key hentes fra `EXPO_PUBLIC_SUPABASE_URL` og `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+- Resend API key / SMTP-passord skal aldri ligge i repoet, `.env`-filer, dokumentasjon eller commits.
 
 ## Dette er ikke produksjonsklart
 
@@ -20,16 +24,17 @@ Dette dokumentet er en nøktern neste-fase-sjekkliste. Målet er kontrollert tes
 ## Web/PWA-test på Android
 
 1. Åpne `https://andreasholteberg.github.io/familieknappen` i Chrome på Android.
-2. Send magic link fra samme browser-kontekst.
-3. Åpne magic link i samme browser hvis mulig. PKCE kan feile hvis lenken åpnes i en annen app/browser-kontekst enn den som startet innloggingen.
-4. Test senior- og pårørende-flyten:
+2. Send 6-sifret kode til e-post.
+3. Skriv koden inn i appen. Dette er hovedflyten i pilot og unngår mobilproblemer med lenkeforhåndsvisning.
+4. Magic link kan fortsatt brukes som backup hvis e-postmal eller Supabase-flow senere sender lenke.
+5. Test senior- og pårørende-flyten:
    - login
    - rolle/ruting etter login
    - invitasjon
    - opprette eller bruke familiegruppe
    - sende forespørsel
    - svare på forespørsel
-5. Eventuell "Legg til på startsiden" tester PWA-opplevelse, men bruker fortsatt web-callback.
+6. Eventuell "Legg til på startsiden" tester PWA-opplevelse, men bruker fortsatt web-callback.
 
 GitHub Pages web/PWA bruker:
 
@@ -55,11 +60,34 @@ Disse scheme-lenkene er først nyttige når Android-appen faktisk er installert 
 registrerer `familieknappen` som scheme. GitHub Pages-testen bruker ikke disse til
 web-login.
 
+## Pilotinnlogging med e-postkode
+
+Hovedflyten i pilot er:
+
+1. Skriv inn e-post.
+2. Trykk `Send kode`.
+3. Åpne e-posten fra `Familieknappen <noreply@familieknappen.app>`.
+4. Skriv inn den 6-sifrede koden i appen.
+5. Trykk `Logg inn`.
+
+Supabase-e-postmalen viser `{{ .Token }}` stort og tydelig. Den skal ikke være
+avhengig av at brukeren klikker på en magic link.
+
+SMTP er konfigurert i Supabase via Resend. Resend API key / SMTP-passord holdes
+utenfor repoet og skal aldri skrives i kode, dokumentasjon eller commits.
+
+Magic link/deep link-koden (`auth-callback`, native intent og app scheme) er
+bevart som backup og for senere native-lenkeflyt, men er ikke hovedinnloggingen
+i pilot.
+
+Etter eventuelle kodeendringer må ny preview APK bygges før endringen kan
+testes på Android.
+
 ## Midlertidig testinnlogging
 
 For APK-testing kan preview/development-builds vise en egen boks merket
-`Testinnlogging - kun preview`. Dette er kun for å slippe Supabase email rate
-limit mens magic link/deep link testes separat.
+`Testinnlogging - kun preview`. Dette er kun for kontrollert intern testing
+uten å sende nye e-postkoder hver gang.
 
 Testinnloggingen bruker vanlig Supabase e-post/passord med anon/public key.
 Den bruker ikke service role key, og passord skal aldri legges i repoet.
@@ -87,7 +115,7 @@ Bruk:
 3. Bruk boksen `Testinnlogging - kun preview`.
 4. Logg inn med en av e-postene i `EXPO_PUBLIC_TEST_LOGIN_EMAILS` og det
    midlertidige passordet fra Supabase.
-5. Test appflyten uten å sende nye magic links.
+5. Test appflyten uten å sende nye e-postkoder.
 
 Før APK-test:
 
@@ -96,7 +124,7 @@ Før APK-test:
 - Sjekk at Supabase Redirect URLs inneholder både web-callbacks og native scheme-lenker.
 - Sjekk at Android package/scheme i `app.json` er riktig.
 - Kjør `npm run typecheck` og `npm run build:web` før du bygger.
-- Test magic link på egen Android før lenken sendes til andre.
+- Test 6-sifret e-postkode på egen Android før APK-en sendes til andre.
 - Test bildevalg/kamera, lagring i Supabase Storage og at forespørselen vises for pårørende.
 
 ## Tre ulike testnivåer
@@ -111,7 +139,7 @@ Før APK-test:
 ### B. Android APK med native deep links
 
 - Bruker installert app.
-- Kan bruke `familieknappen://auth-callback` og `familieknappen://invite`.
+- Kan bruke `familieknappen:///auth-callback` og `familieknappen:///invite` som backup.
 - Krever EAS/Android-build med riktige env-vars.
 - Må testes for Android-lenkeåpning, kamera/bildevalg og app-livssyklus.
 

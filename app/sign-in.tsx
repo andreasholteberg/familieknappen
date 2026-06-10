@@ -21,9 +21,9 @@ const testLoginEnabled =
 const previewBuildLabel = process.env.EXPO_PUBLIC_PREVIEW_BUILD_LABEL ?? 'Preview build';
 
 /**
- * Innlogging med magisk lenke (passordløst). Pårørende skriver inn e-posten,
- * får en lenke, og åpner den på enheten. Etter første gang holder den lagrede
- * økten brukeren innlogget «automatisk».
+ * Innlogging med 6-sifret kode på e-post (passordløst). Pårørende skriver
+ * inn e-posten, mottar en kode, og taster den inn i appen. Mer pålitelig enn
+ * å klikke på en lenke i mobilen (ingen link-forhåndshenting / PKCE-feil).
  */
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -33,6 +33,8 @@ export default function SignIn() {
   const [testEmail, setTestEmail] = useState('');
   const [testPassword, setTestPassword] = useState('');
   const [testSigningIn, setTestSigningIn] = useState(false);
+  const [code, setCode] = useState('');
+  const [verifying, setVerifying] = useState(false);
   const authStatus = useAppStore((s) => s.status);
 
   if (authStatus === 'ready') {
@@ -48,11 +50,12 @@ export default function SignIn() {
     }
     setSending(true);
     setError(null);
+    setCode('');
     try {
-      await svc.auth.sendMagicLink(value);
+      await svc.auth.sendEmailCode(value);
       setSentTo(value);
     } catch (e) {
-      setError(humanizeAuthError(e, 'Kunne ikke sende lenken. Prøv igjen.'));
+      setError(humanizeAuthError(e, 'Noe gikk galt med innloggingen. Prøv igjen.'));
     } finally {
       setSending(false);
     }
@@ -83,7 +86,7 @@ export default function SignIn() {
     setError(null);
     try {
       const session = await svc.auth.signInWithPassword(value, testPassword);
-      if (!session) throw new Error('Testinnlogging ga ingen aktiv sesjon.');
+      if (!session) throw new Error('Testinnloggingen ble ikke fullført. Prøv igjen.');
 
       useAppStore.setState({
         session,
@@ -99,6 +102,51 @@ export default function SignIn() {
     }
   };
 
+
+  const verify = async () => {
+    if (verifying) return;
+    const trimmed = code.replace(/\D/g, '');
+    if (trimmed.length !== 6) {
+      setError('Koden er 6 siffer. Sjekk e-posten igjen.');
+      return;
+    }
+    if (!sentTo) {
+      setError('Be om en ny kode først.');
+      return;
+    }
+    setVerifying(true);
+    setError(null);
+    try {
+      const session = await svc.auth.verifyEmailCode(sentTo, trimmed);
+      if (!session) throw new Error('Innloggingen ble ikke fullført. Prøv igjen.');
+      useAppStore.setState({
+        session,
+        currentUserId: session.user.id,
+        status: 'loading',
+        errorMessage: null,
+      });
+      await useAppStore.getState().refresh();
+    } catch (e) {
+      setError(humanizeAuthError(e, 'Koden er feil eller utløpt. Be om en ny kode og prøv igjen.'));
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const resend = async () => {
+    if (sending || !sentTo) return;
+    setSending(true);
+    setError(null);
+    setCode('');
+    try {
+      await svc.auth.sendEmailCode(sentTo);
+    } catch (e) {
+      setError(humanizeAuthError(e, 'Noe gikk galt med innloggingen. Prøv igjen.'));
+    } finally {
+      setSending(false);
+    }
+  };
+
   if (sentTo) {
     return (
       <SafeAreaView style={styles.safe}>
@@ -108,12 +156,53 @@ export default function SignIn() {
           keyboardShouldPersistTaps="handled"
         >
           <Text style={styles.check}>📧</Text>
-          <Text style={styles.title}>Sjekk e-posten din</Text>
+          <Text style={styles.title}>Skriv inn koden</Text>
           <Text style={styles.subtitle}>
-            Vi har sendt en innloggingslenke til {sentTo}. Åpne e-posten på denne enheten og trykk
-            på lenken for å logge inn.
+            Vi har sendt en 6-sifret kode til e-posten din. Skriv koden inn her.
           </Text>
-          <BigButton label="Bruk en annen e-post" variant="day" compact onPress={() => setSentTo(null)} />
+
+          <Text style={styles.label}>Kode</Text>
+          <TextInput
+            style={[styles.input, styles.codeInput]}
+            value={code}
+            onChangeText={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))}
+            placeholder="123456"
+            placeholderTextColor={colors.inkFaint}
+            keyboardType="number-pad"
+            inputMode="numeric"
+            maxLength={6}
+            autoFocus
+            autoComplete="one-time-code"
+            onSubmitEditing={verify}
+            accessibilityLabel="6-sifret kode"
+          />
+
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+
+          {verifying ? (
+            <View style={styles.sending}>
+              <ActivityIndicator color={colors.brand} />
+              <Text style={styles.muted}>Logger inn …</Text>
+            </View>
+          ) : (
+            <BigButton label="Logg inn" variant="primary" onPress={verify} />
+          )}
+
+          {sending ? (
+            <View style={styles.sending}>
+              <ActivityIndicator color={colors.brand} />
+              <Text style={styles.muted}>Sender ny kode …</Text>
+            </View>
+          ) : (
+            <BigButton label="Send ny kode" variant="day" compact onPress={resend} />
+          )}
+
+          <BigButton
+            label="Endre e-post"
+            variant="day"
+            compact
+            onPress={() => { setSentTo(null); setCode(''); setError(null); }}
+          />
         </ScrollView>
       </SafeAreaView>
     );
@@ -131,7 +220,7 @@ export default function SignIn() {
         </View>
         <Text style={styles.title}>Familieknappen</Text>
         <Text style={styles.subtitle}>
-          Logg inn med e-posten din. Du får en lenke – ingen passord å huske.
+          Logg inn med e-posten din. Du får en 6-sifret kode på e-post – ingen passord å huske.
         </Text>
 
         <Text style={styles.label}>E-post</Text>
@@ -153,10 +242,10 @@ export default function SignIn() {
         {sending ? (
           <View style={styles.sending}>
             <ActivityIndicator color={colors.brand} />
-            <Text style={styles.muted}>Sender lenke …</Text>
+            <Text style={styles.muted}>Sender kode …</Text>
           </View>
         ) : (
-          <BigButton label="Send innloggingslenke" variant="primary" onPress={send} />
+          <BigButton label="Send kode" variant="primary" onPress={send} />
         )}
 
         {testLoginEnabled ? (
@@ -164,7 +253,7 @@ export default function SignIn() {
             <Text style={styles.testTitle}>Testinnlogging – kun preview</Text>
             <Text style={styles.buildLabel}>{previewBuildLabel}</Text>
             <Text style={styles.testHelp}>
-              Bruk bare definerte testbrukere. Magic link er fortsatt hovedinnloggingen.
+              Bruk bare definerte testbrukere. E-postkode er hovedinnloggingen i pilot.
             </Text>
 
             <Text style={styles.testLabel}>Test e-post</Text>
@@ -251,6 +340,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing(4),
   },
   error: { color: colors.attention, fontSize: fontSize.md, marginBottom: spacing(3) },
+  codeInput: { fontSize: 28, letterSpacing: 10, textAlign: 'center', fontWeight: '800' },
   sending: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing(3), paddingVertical: spacing(4) },
   muted: { fontSize: fontSize.body, color: colors.inkSoft },
   testPanel: {

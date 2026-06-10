@@ -1,8 +1,9 @@
 /**
- * Auth-tjeneste – passordløs innlogging med magisk lenke (Supabase OTP/PKCE).
+ * Auth-tjeneste – passordløs innlogging med 6-sifret e-postkode.
  *
  * Senior skal slippe å håndtere passord. Pårørende setter opp kontoen; etter
  * første innlogging holder den vedvarende økten brukeren innlogget «automatisk».
+ * Magisk lenke/deep link er beholdt som backup, men er ikke hovedflyt i pilot.
  */
 
 import type { Session } from '@supabase/supabase-js';
@@ -51,7 +52,16 @@ const logAuthDebug = (message: string, detail?: string): void => {
   console.log(`[Familieknappen] Auth: ${message}${detail ? ` (${detail})` : ''}`);
 };
 
-/** Sender en magisk lenke til e-posten. emailRedirectTo må være en app-deep-link. */
+/** Sender en 6-sifret e-postkode. Bruker ikke redirectTo i hovedflyten. */
+export async function sendEmailCode(email: string): Promise<void> {
+  const { error } = await supabase.auth.signInWithOtp({
+    email: email.trim().toLowerCase(),
+    options: { shouldCreateUser: true },
+  });
+  if (error) throw error;
+}
+
+/** Sender en magisk lenke til e-posten. Beholdt som deep-link-backup. */
 export async function sendMagicLink(email: string): Promise<void> {
   const emailRedirectTo = createAppUrl('auth-callback');
   if (__DEV__) {
@@ -65,6 +75,17 @@ export async function sendMagicLink(email: string): Promise<void> {
     options: { emailRedirectTo },
   });
   if (error) throw error;
+}
+
+/** Verifiser 6-sifret OTP-kode fra e-post. */
+export async function verifyEmailCode(email: string, code: string): Promise<Session | null> {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: email.trim().toLowerCase(),
+    token: code.trim(),
+    type: 'email',
+  });
+  if (error) throw error;
+  return data.session ?? (await getSession());
 }
 
 /** Midlertidig testinnlogging for preview/development. Bruker ikke service role. */
@@ -117,4 +138,9 @@ export function onAuthStateChange(cb: (session: Session | null) => void): () => 
 
 export async function signOut(): Promise<void> {
   await supabase.auth.signOut();
+}
+
+/** Bakoverkompatibelt alias for tidligere navn. */
+export async function verifyEmailOtp(email: string, token: string): Promise<Session | null> {
+  return verifyEmailCode(email, token);
 }

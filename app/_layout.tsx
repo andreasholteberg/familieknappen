@@ -34,9 +34,9 @@ function applyDefaultTextFont() {
 }
 
 /**
- * Rot-oppsett. Starter auth-livssyklusen én gang. Callback-ruten
- * (app/auth-callback.tsx) fullfører magisk lenke. Logoen vises i hver Stack
- * sitt header (via HeaderTitle) og som visuelt anker på sign-in/onboarding.
+ * Rot-oppsett. Starter auth-livssyklusen én gang. Pilotinnloggingen bruker
+ * e-postkode, mens callback-ruten beholdes som magic-link-backup. Logoen vises
+ * i hver Stack sitt header og som visuelt anker på sign-in/onboarding.
  */
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({

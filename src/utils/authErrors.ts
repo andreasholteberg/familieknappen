@@ -1,8 +1,8 @@
 /**
  * Oversetter tekniske auth-feil til norske, menneskelige meldinger.
  *
- * I dev/preview viser vi også originalmeldingen (i parentes) som hjelp under
- * feilsøking. I produksjon viser vi bare den norske teksten til brukeren.
+ * Brukergrensesnittet skal ikke vise tekniske engelske Supabase-meldinger,
+ * heller ikke i preview-builds som testes av familien.
  *
  * Brukes fra innloggings- og callback-skjermer slik at min mor ikke møter
  * engelske Supabase-feil som "Email rate limit exceeded".
@@ -13,15 +13,15 @@ type ErrorMapping = { match: RegExp; message: string };
 const NORWEGIAN_MESSAGES: ErrorMapping[] = [
   // Supabase rate limit på e-postutsending.
   {
-    match: /email rate limit|rate.?limit|too many (?:emails|requests)/i,
+    match: /email rate limit|rate.?limit|too many (?:emails|requests)|security purposes|only request this after/i,
     message:
       'Det er sendt for mange e-poster på kort tid. Vent litt før du prøver igjen.',
   },
-  // Magic link / OTP utløpt eller allerede brukt.
+  // OTP-kode eller backup-lenke er feil, utløpt eller allerede brukt.
   {
     match: /otp.*(?:expired|invalid)|token.*(?:expired|invalid)|email link.*(?:invalid|expired)/i,
     message:
-      'Lenken er utløpt eller allerede brukt. Be om en ny lenke fra innloggingsskjermen.',
+      'Koden er feil eller utløpt. Be om en ny kode og prøv igjen.',
   },
   // Feil passord / ukjent bruker (test-innlogging).
   {
@@ -53,12 +53,6 @@ const NORWEGIAN_MESSAGES: ErrorMapping[] = [
   },
 ];
 
-const isDevOrPreview = (): boolean => {
-  if (typeof __DEV__ !== 'undefined' && __DEV__) return true;
-  const env = process.env.EXPO_PUBLIC_APP_ENV?.toLowerCase();
-  return env === 'preview' || env === 'development';
-};
-
 const extractMessage = (err: unknown): string => {
   if (err instanceof Error) return err.message ?? '';
   if (typeof err === 'string') return err;
@@ -89,9 +83,5 @@ export function humanizeAuthError(
     }
   }
 
-  // I dev/preview vises originalmelding nederst som hjelp under feilsøking.
-  if (isDevOrPreview() && original && original !== friendly) {
-    return `${friendly}\n\n(teknisk: ${original})`;
-  }
   return friendly;
 }

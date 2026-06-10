@@ -10,7 +10,7 @@ import { colors, fontSize, spacing } from '@/theme/theme';
 /**
  * Inngangspunkt og auth-gate. Bestemmer hvor brukeren skal:
  *  - laster        → rolig ventevisning
- *  - ikke innlogget → /sign-in (magisk lenke)
+ *  - ikke innlogget → /sign-in (e-postkode)
  *  - innlogget      → /senior eller /relative ut fra profil-rollen
  *  - feil/ikke konfig → tydelig feilmelding (ingen stille mock-fallback)
  */
