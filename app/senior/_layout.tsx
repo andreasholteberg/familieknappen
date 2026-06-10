@@ -23,6 +23,7 @@ export default function SeniorLayout() {
       <Stack.Screen name="index" options={{ title: 'Familieknappen', headerBackVisible: false }} />
       <Stack.Screen name="ask" options={{ title: 'Spør familien' }} />
       <Stack.Screen name="answer" options={{ title: 'Svar fra familien' }} />
+      <Stack.Screen name="call" options={{ title: 'Ring familien' }} />
       <Stack.Screen name="day" options={{ title: 'Min dag' }} />
       <Stack.Screen name="privacy" options={{ title: 'Personvern' }} />
     </Stack>

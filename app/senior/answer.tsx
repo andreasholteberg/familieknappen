@@ -1,12 +1,13 @@
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from '@/components/BigButton';
 import { Screen } from '@/components/Screen';
 import { selectResponseForRequest, useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, radius, shadow, spacing } from '@/theme/theme';
 import { RESPONSE_META } from '@/types/models';
+import { callPhone, telUrl } from '@/utils/phone';
 
 const EMOJI = { do_not_reply: '✋', looks_ok: '👍', calling_you: '📞', custom: '💬' } as const;
 const BORDER = {
@@ -15,7 +16,13 @@ const BORDER = {
   neutral: colors.brand,
 } as const;
 
-/** Viser familiens svar stort og tydelig, med «Ring [navn]»-knapp. */
+/**
+ * Viser familiens svar stort og tydelig.
+ *
+ * Svaret forsvinner IKKE av seg selv (F-010): senior må trykke
+ * «Jeg har sett svaret» for at kortet på hjem-skjermen skal bli borte.
+ * Å bare åpne og lukke skjermen endrer ingenting.
+ */
 export default function SeniorAnswer() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string }>();
@@ -29,13 +36,6 @@ export default function SeniorAnswer() {
 
   const response = useAppStore(selectResponseForRequest(request?.id));
 
-  const requestId = request?.id;
-  useFocusEffect(
-    useCallback(() => {
-      if (requestId) markAnswerSeen(requestId);
-    }, [requestId, markAnswerSeen]),
-  );
-
   if (!request || !response) {
     return (
       <Screen>
@@ -48,6 +48,7 @@ export default function SeniorAnswer() {
   const by = users.find((u) => u.id === response.relativeId);
   const meta = RESPONSE_META[response.responseType];
   const bigText = response.responseType === 'custom' ? response.responseText ?? '' : meta.big;
+  const canCallBy = !!telUrl(by?.phone);
 
   const note =
     response.responseType === 'do_not_reply'
@@ -58,8 +59,10 @@ export default function SeniorAnswer() {
           ? 'Vent litt – telefonen ringer snart.'
           : '';
 
-  const callBack = () =>
-    Alert.alert(`Ringer ${by?.name ?? 'familien'} …`, 'Ringefunksjonen er ikke koblet på ennå.', [{ text: 'Avslutt' }]);
+  const acknowledge = () => {
+    markAnswerSeen(request.id);
+    router.replace('/senior');
+  };
 
   return (
     <Screen>
@@ -70,8 +73,17 @@ export default function SeniorAnswer() {
         {note ? <Text style={styles.note}>{note}</Text> : null}
       </View>
 
-      <BigButton icon="📞" label={`Ring ${by?.name ?? 'familien'}`} variant="call" onPress={callBack} />
-      <BigButton label="Ferdig" variant="day" compact onPress={() => router.replace('/senior')} />
+      {canCallBy ? (
+        <BigButton
+          icon="📞"
+          label={`Ring ${by?.name ?? 'familien'}`}
+          variant="call"
+          onPress={() => void callPhone(by?.phone)}
+        />
+      ) : null}
+
+      <BigButton label="Jeg har sett svaret" variant="primary" onPress={acknowledge} />
+      <BigButton label="Tilbake" variant="day" compact onPress={() => router.back()} />
     </Screen>
   );
 }

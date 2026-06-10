@@ -1,30 +1,37 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from '@/components/BigButton';
 import { Screen } from '@/components/Screen';
 import {
   selectOpenRequests,
-  selectPrimaryContact,
+  selectRelativeMembers,
   selectSenior,
   selectUnseenAnswer,
   useAppStore,
 } from '@/store/useAppStore';
 import { colors, fontSize, radius, spacing } from '@/theme/theme';
+import { telUrl } from '@/utils/phone';
 
 /**
  * Seniorens hjemskjerm. Maks tre hovedvalg + et kontekstuelt «nytt svar»-kort
  * når familien har svart. Stor tekst, høy kontrast, rolig tone.
+ *
+ * «Ring familien» vises bare hvis minst én pårørende har telefonnummer
+ * (F-008): knappen skal virke eller være borte – aldri «kommer ennå».
  */
 export default function SeniorHome() {
   const router = useRouter();
   const senior = useAppStore(selectSenior);
-  const primary = useAppStore(selectPrimaryContact);
   const unseen = useAppStore(selectUnseenAnswer);
   const openRequests = useAppStore(useShallow(selectOpenRequests));
+  const relatives = useAppStore(useShallow(selectRelativeMembers));
+  const users = useAppStore((s) => s.users);
   const touchActivity = useAppStore((s) => s.touchActivity);
+
+  const canCall = relatives.some((m) => telUrl(users.find((u) => u.id === m.userId)?.phone));
 
   const latestOpen = openRequests[0];
   const isEscalated = latestOpen?.status === 'ESCALATED';
@@ -39,14 +46,6 @@ export default function SeniorHome() {
       touchActivity();
     }, [touchActivity]),
   );
-
-  const callFamily = () => {
-    Alert.alert(
-      `Ringer ${primary?.name ?? 'familien'} …`,
-      'Ringefunksjonen er ikke koblet på ennå. Du kan ringe på vanlig måte i mellomtiden.',
-      [{ text: 'Avslutt' }],
-    );
-  };
 
   return (
     <Screen>
@@ -71,7 +70,9 @@ export default function SeniorHome() {
         onPress={() => router.push('/senior/ask')}
       />
 
-      <BigButton icon="📞" label="Ring familien" variant="call" onPress={callFamily} />
+      {canCall ? (
+        <BigButton icon="📞" label="Ring familien" variant="call" onPress={() => router.push('/senior/call')} />
+      ) : null}
 
       <BigButton icon="📅" label="Min dag" variant="day" onPress={() => router.push('/senior/day')} />
 

@@ -10,6 +10,7 @@ import { colors, fontSize, radius, spacing } from '@/theme/theme';
 import type { ResponseType } from '@/types/models';
 import { RESPONSE_META } from '@/types/models';
 import { clock, timeAgo } from '@/utils/format';
+import { callPhone } from '@/utils/phone';
 
 export default function RequestDetail() {
   const router = useRouter();
@@ -53,12 +54,17 @@ export default function RequestDetail() {
     try {
       await respondToRequest({ requestId: request.id, relativeId, responseType: type });
       if (type === 'calling_you') {
-        Alert.alert(`Ringer ${senior?.name ?? 'senior'} …`, 'Ringefunksjonen er ikke koblet på ennå.', [
-          { text: 'OK', onPress: () => router.back() },
-        ]);
-      } else {
-        router.back();
+        const called = await callPhone(senior?.phone);
+        if (!called) {
+          Alert.alert(
+            `${senior?.name ?? 'Senior'} venter på at du ringer`,
+            'Vi fant ikke noe telefonnummer her. Ring på vanlig måte.',
+            [{ text: 'OK', onPress: () => router.back() }],
+          );
+          return;
+        }
       }
+      router.back();
     } catch {
       setRespondError('Vi fikk ikke sendt svaret. Sjekk nettet og prøv igjen.');
     } finally {
@@ -83,13 +89,6 @@ export default function RequestDetail() {
       setResponding(false);
     }
   };
-
-  const startVideo = () =>
-    Alert.alert(
-      `Videosamtale med ${senior?.name ?? 'senior'}`,
-      'Videosamtale er ikke tilgjengelig ennå.',
-      [{ text: 'Avslutt' }],
-    );
 
   return (
     <Screen>
@@ -150,10 +149,6 @@ export default function RequestDetail() {
       <Pressable style={styles.primaryBtn} onPress={sendCustom}>
         <Text style={styles.primaryBtnText}>Send svar</Text>
       </Pressable>
-
-      <Pressable style={styles.videoBtn} onPress={startVideo}>
-        <Text style={styles.videoBtnText}>🎥 Start videosamtale</Text>
-      </Pressable>
     </Screen>
   );
 }
@@ -192,14 +187,6 @@ const styles = StyleSheet.create({
     marginTop: spacing(2.5),
   },
   primaryBtnText: { color: colors.white, fontSize: fontSize.md, fontWeight: '700' },
-  videoBtn: {
-    backgroundColor: colors.calmGreen,
-    borderRadius: radius.m,
-    paddingVertical: spacing(4),
-    alignItems: 'center',
-    marginTop: spacing(2.5),
-  },
-  videoBtnText: { color: colors.white, fontSize: fontSize.md, fontWeight: '700' },
   respondError: { fontSize: fontSize.md, color: colors.attention, marginBottom: spacing(2), lineHeight: 24 },
   respondingBox: { flexDirection: 'row', alignItems: 'center', gap: spacing(3), paddingVertical: spacing(3) },
   respondingText: { fontSize: fontSize.md, fontWeight: '700', color: colors.brandDark },

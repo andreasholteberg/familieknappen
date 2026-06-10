@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useShallow } from 'zustand/react/shallow';
 
 import { BigButton } from '@/components/BigButton';
@@ -8,6 +8,7 @@ import { Screen } from '@/components/Screen';
 import { selectPrimaryContact, selectTodaysEvents, useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, radius, shadow, spacing } from '@/theme/theme';
 import { longDate } from '@/utils/format';
+import { telUrl } from '@/utils/phone';
 
 /** Seniorens dagsoversikt: store kort med klokkeslett og tekst. */
 export default function MyDay() {
@@ -15,8 +16,7 @@ export default function MyDay() {
   const events = useAppStore(useShallow(selectTodaysEvents));
   const primary = useAppStore(selectPrimaryContact);
 
-  const call = () =>
-    Alert.alert(`Ringer ${primary?.name ?? 'familien'} …`, 'Ringefunksjonen er ikke koblet på ennå.', [{ text: 'Avslutt' }]);
+  const canCall = !!telUrl(primary?.phone);
 
   return (
     <Screen>
@@ -36,7 +36,16 @@ export default function MyDay() {
         <Text style={styles.empty}>Ingen avtaler i dag.{'\n'}Du kan slappe av. 🌿</Text>
       )}
 
-      <BigButton icon="📞" label="Ring familien" variant="call" compact onPress={call} style={{ marginTop: spacing(4) }} />
+      {canCall ? (
+        <BigButton
+          icon="📞"
+          label="Ring familien"
+          variant="call"
+          compact
+          onPress={() => router.push('/senior/call')}
+          style={{ marginTop: spacing(4) }}
+        />
+      ) : null}
     </Screen>
   );
 }
