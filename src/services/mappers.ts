@@ -124,6 +124,7 @@ export function toHelpRequest(r: Tables<'help_requests'>, imageUri?: string): He
     escalatedAt: r.escalated_at ?? undefined,
     closedAt: r.closed_at ?? undefined,
     seenBySenior: r.seen_by_senior,
+    acknowledgedAt: r.acknowledged_at ?? undefined,
   };
 }
 

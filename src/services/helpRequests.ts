@@ -68,7 +68,7 @@ export async function markViewed(id: string): Promise<void> {
 export async function markAnswerSeen(id: string): Promise<void> {
   const { error } = await supabase
     .from('help_requests')
-    .update({ seen_by_senior: true })
+    .update({ seen_by_senior: true, acknowledged_at: new Date().toISOString() })
     .eq('id', id);
   if (error) throw error;
 }

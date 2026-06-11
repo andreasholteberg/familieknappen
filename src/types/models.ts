@@ -77,6 +77,8 @@ export interface HelpRequest {
   closedAt?: string;
   /** Hvorvidt senior har sett svaret (driver «nytt svar»-kortet på hjem). */
   seenBySenior?: boolean;
+  /** Når senior eksplisitt kvitterte med «Jeg har sett svaret» (F-021). */
+  acknowledgedAt?: string;
 }
 
 export interface HelpResponse {

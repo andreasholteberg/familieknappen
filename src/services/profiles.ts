@@ -22,3 +22,9 @@ export async function setActivitySharing(userId: string, enabled: boolean): Prom
     .eq('id', userId);
   if (error) throw error;
 }
+
+/** Oppdater eget telefonnummer (RLS: kun egen profil). */
+export async function setPhone(userId: string, phone: string | null): Promise<void> {
+  const { error } = await supabase.from('profiles').update({ phone }).eq('id', userId);
+  if (error) throw error;
+}

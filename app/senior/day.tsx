@@ -36,6 +36,15 @@ export default function MyDay() {
         <Text style={styles.empty}>Ingen avtaler i dag.{'\n'}Du kan slappe av. 🌿</Text>
       )}
 
+      <BigButton
+        icon="＋"
+        label="Legg til avtale"
+        variant="primary"
+        compact
+        onPress={() => router.push('/senior/add-event')}
+        style={{ marginTop: spacing(4) }}
+      />
+
       {canCall ? (
         <BigButton
           icon="📞"
@@ -43,7 +52,7 @@ export default function MyDay() {
           variant="call"
           compact
           onPress={() => router.push('/senior/call')}
-          style={{ marginTop: spacing(4) }}
+          style={{ marginTop: spacing(2) }}
         />
       ) : null}
     </Screen>

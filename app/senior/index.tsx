@@ -70,11 +70,18 @@ export default function SeniorHome() {
         onPress={() => router.push('/senior/ask')}
       />
 
+      <BigButton
+        icon="👨‍👩‍👧"
+        label="Min familie"
+        variant="day"
+        onPress={() => router.push('/senior/family')}
+      />
+
+      <BigButton icon="📅" label="Min dag" variant="day" onPress={() => router.push('/senior/day')} />
+
       {canCall ? (
         <BigButton icon="📞" label="Ring familien" variant="call" onPress={() => router.push('/senior/call')} />
       ) : null}
-
-      <BigButton icon="📅" label="Min dag" variant="day" onPress={() => router.push('/senior/day')} />
 
       <View style={styles.statusChip}>
         <View style={[styles.dot, latestOpen ? styles.dotActive : null]} />
@@ -84,6 +91,10 @@ export default function SeniorHome() {
       <Text style={styles.footnote}>
         Er du usikker på noe? Trykk «Spør familien».{'\n'}Vent på svar før du gjør noe.
       </Text>
+
+      <Pressable style={styles.privacyLink} onPress={() => router.push('/senior/history')}>
+        <Text style={styles.privacyLinkText}>Tidligere svar</Text>
+      </Pressable>
 
       <Pressable style={styles.privacyLink} onPress={() => router.push('/senior/privacy')}>
         <Text style={styles.privacyLinkText}>Personvern og samtykke</Text>

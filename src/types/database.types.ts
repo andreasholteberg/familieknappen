@@ -97,6 +97,7 @@ export type Database = {
           escalation_due_at: string | null;
           escalation_level: number;
           closed_at: string | null;
+          acknowledged_at: string | null;
         };
         Insert: {
           id?: string;
@@ -115,6 +116,7 @@ export type Database = {
           escalation_due_at?: string | null;
           escalation_level?: number;
           closed_at?: string | null;
+          acknowledged_at?: string | null;
         };
         Update: {
           recipient_id?: string | null;
@@ -129,6 +131,7 @@ export type Database = {
           escalation_due_at?: string | null;
           escalation_level?: number;
           closed_at?: string | null;
+          acknowledged_at?: string | null;
         };
         Relationships: [];
       };
@@ -292,6 +295,11 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      create_pairing_code: {
+        Args: { p_group: string; p_role?: MemberRoleDb };
+        Returns: Json;
+      };
+      pair_with_code: { Args: { p_code: string }; Returns: Json };
       is_group_member: { Args: { g: string }; Returns: boolean };
       shares_group_with: { Args: { other: string }; Returns: boolean };
       request_group: { Args: { req: string }; Returns: string };

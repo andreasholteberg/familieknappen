@@ -31,30 +31,48 @@ export default function EventForm() {
   const [date, setDate] = useState(editing?.date ?? todayISO());
   const [time, setTime] = useState(editing?.time ?? '12:00');
 
-  const save = () => {
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    if (busy) return;
     if (!title.trim()) {
       Alert.alert('Skriv hva som skal skje');
       return;
     }
-    if (editing) {
-      updateEvent(editing.id, { title: title.trim(), description: description.trim(), date, time });
-    } else {
-      addEvent({
-        seniorId: senior?.id ?? '',
-        createdBy: currentUserId ?? '',
-        title: title.trim(),
-        description: description.trim(),
-        date,
-        time,
-        recurrence: 'none',
-      });
+    setBusy(true);
+    try {
+      if (editing) {
+        await updateEvent(editing.id, { title: title.trim(), description: description.trim(), date, time });
+      } else {
+        await addEvent({
+          seniorId: senior?.id ?? '',
+          createdBy: currentUserId ?? '',
+          title: title.trim(),
+          description: description.trim(),
+          date,
+          time,
+          recurrence: 'none',
+        });
+      }
+      router.back();
+    } catch {
+      Alert.alert('Fikk ikke lagret avtalen', 'Sjekk nettet og prøv igjen.');
+    } finally {
+      setBusy(false);
     }
-    router.back();
   };
 
-  const remove = () => {
-    if (editing) deleteEvent(editing.id);
-    router.back();
+  const remove = async () => {
+    if (!editing || busy) return;
+    setBusy(true);
+    try {
+      await deleteEvent(editing.id);
+      router.back();
+    } catch {
+      Alert.alert('Fikk ikke slettet avtalen', 'Sjekk nettet og prøv igjen.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -74,12 +92,12 @@ export default function EventForm() {
         </View>
       </View>
 
-      <Pressable style={styles.primaryBtn} onPress={save}>
-        <Text style={styles.primaryBtnText}>{editing ? 'Lagre endringer' : 'Legg til avtale'}</Text>
+      <Pressable style={[styles.primaryBtn, busy && styles.busyBtn]} disabled={busy} onPress={() => void save()}>
+        <Text style={styles.primaryBtnText}>{busy ? 'Lagrer …' : editing ? 'Lagre endringer' : 'Legg til avtale'}</Text>
       </Pressable>
 
       {editing ? (
-        <Pressable style={styles.deleteBtn} onPress={remove}>
+        <Pressable style={[styles.deleteBtn, busy && styles.busyBtn]} disabled={busy} onPress={() => void remove()}>
           <Text style={styles.deleteBtnText}>Slett avtale</Text>
         </Pressable>
       ) : null}
@@ -110,4 +128,5 @@ const styles = StyleSheet.create({
   primaryBtnText: { color: colors.white, fontSize: fontSize.md, fontWeight: '700' },
   deleteBtn: { backgroundColor: colors.attentionSoft, borderRadius: radius.m, paddingVertical: spacing(4), alignItems: 'center', marginTop: spacing(2.5) },
   deleteBtnText: { color: colors.attention, fontSize: fontSize.md, fontWeight: '700' },
+  busyBtn: { opacity: 0.6 },
 });

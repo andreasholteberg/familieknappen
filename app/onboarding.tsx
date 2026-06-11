@@ -18,11 +18,34 @@ export default function Onboarding() {
   const status = useAppStore((s) => s.status);
   const currentUser = useAppStore(selectCurrentUser);
   const createGroup = useAppStore((s) => s.createGroup);
+  const pairWithCode = useAppStore((s) => s.pairWithCode);
   const signOut = useAppStore((s) => s.signOut);
 
   const [name, setName] = useState('Min familie');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [code, setCode] = useState('');
+  const [pairing, setPairing] = useState(false);
+  const [pairError, setPairError] = useState<string | null>(null);
+
+  const submitCode = async () => {
+    if (pairing) return;
+    const clean = code.replace(/\D/g, '');
+    if (clean.length !== 6) {
+      setPairError('Koden er 6 siffer.');
+      return;
+    }
+    setPairing(true);
+    setPairError(null);
+    try {
+      await pairWithCode(clean);
+      router.replace('/');
+    } catch (e) {
+      setPairError((e as Error)?.message ?? 'Koden virket ikke. Prøv igjen.');
+    } finally {
+      setPairing(false);
+    }
+  };
 
   // Ruting: ikke innlogget -> innlogging; allerede i en gruppe -> hjem.
   if (status === 'idle' || status === 'loading') {
@@ -62,9 +85,34 @@ export default function Onboarding() {
           <Logo size={88} />
         </View>
         <Text style={styles.title}>Velkommen 👋</Text>
+
+        <Text style={styles.label}>Har du fått en 6-sifret kode fra familien?</Text>
+        <TextInput
+          style={[styles.input, styles.codeInput]}
+          value={code}
+          onChangeText={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))}
+          placeholder="123456"
+          placeholderTextColor={colors.inkFaint}
+          keyboardType="number-pad"
+          inputMode="numeric"
+          maxLength={6}
+          accessibilityLabel="6-sifret kode fra familien"
+        />
+        {pairError ? <Text style={styles.error}>{pairError}</Text> : null}
+        {pairing ? (
+          <View style={styles.busy}>
+            <ActivityIndicator color={colors.brand} />
+            <Text style={styles.muted}>Kobler til familien …</Text>
+          </View>
+        ) : (
+          <BigButton label="Bli med i familien" variant="primary" compact onPress={() => void submitCode()} />
+        )}
+
+        <Text style={styles.divider}>— eller —</Text>
+
         <Text style={styles.subtitle}>
-          Opprett en familiegruppe for å komme i gang. Du blir kontaktperson, og kan invitere
-          resten av familien etterpå fra innstillinger.
+          Start en ny familiegruppe. Du blir kontaktperson, og kan invitere resten av familien
+          etterpå fra innstillinger.
         </Text>
 
         <Text style={styles.label}>Navn på familiegruppen</Text>
@@ -113,8 +161,15 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     textAlign: 'center',
     marginTop: spacing(2),
-    marginBottom: spacing(7),
+    marginBottom: spacing(4),
     lineHeight: 28,
+  },
+  codeInput: { textAlign: 'center', fontSize: fontSize.title, letterSpacing: 8, fontWeight: '800' },
+  divider: {
+    fontSize: fontSize.md,
+    color: colors.inkFaint,
+    textAlign: 'center',
+    marginVertical: spacing(4),
   },
   label: { fontSize: fontSize.sm, fontWeight: '700', color: colors.inkSoft, marginBottom: spacing(1.5) },
   input: {

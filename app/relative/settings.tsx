@@ -9,6 +9,7 @@ import { selectCurrentUser, selectSenior, useAppStore } from '@/store/useAppStor
 import { colors, fontSize, radius, spacing } from '@/theme/theme';
 import type { GroupInvitation } from '@/types/models';
 import { createAppUrl } from '@/utils/appLinks';
+import { normalizePhone } from '@/utils/phone';
 
 const SCOPE_LABEL: Record<string, string> = {
   help_requests: 'Forespørsler',
@@ -76,6 +77,48 @@ export default function RelativeSettings() {
   const myMember = members.find((m) => m.userId === currentUserId);
   const iAmPrimary = !!myMember?.isPrimaryContact;
   const activitySharing = currentUser?.activitySharingEnabled ?? true;
+
+  const setMyPhone = useAppStore((s) => s.setMyPhone);
+  const createPairingCode = useAppStore((s) => s.createPairingCode);
+  const [pairingCode, setPairingCode] = useState<{ code: string; expiresAt: string } | null>(null);
+  const [pairingBusy, setPairingBusy] = useState(false);
+  const [pairingError, setPairingError] = useState<string | null>(null);
+
+  const makePairingCode = async () => {
+    if (pairingBusy) return;
+    setPairingBusy(true);
+    setPairingError(null);
+    try {
+      const res = await createPairingCode(inviteRole);
+      setPairingCode({ code: res.code, expiresAt: res.expiresAt });
+    } catch (e) {
+      setPairingError((e as Error)?.message ?? 'Fikk ikke laget koden. Prøv igjen.');
+    } finally {
+      setPairingBusy(false);
+    }
+  };
+  const [phoneInput, setPhoneInput] = useState(currentUser?.phone ?? '');
+  const [phoneStatus, setPhoneStatus] = useState<string | null>(null);
+  const [savingPhone, setSavingPhone] = useState(false);
+
+  const savePhone = async () => {
+    if (savingPhone) return;
+    const normalized = normalizePhone(phoneInput);
+    if (phoneInput.trim() && !normalized) {
+      setPhoneStatus('Skriv et gyldig telefonnummer.');
+      return;
+    }
+    setSavingPhone(true);
+    setPhoneStatus(null);
+    try {
+      await setMyPhone(normalized);
+      setPhoneStatus(normalized ? 'Lagret ✓' : 'Nummeret er fjernet.');
+    } catch {
+      setPhoneStatus('Fikk ikke lagret nummeret. Prøv igjen.');
+    } finally {
+      setSavingPhone(false);
+    }
+  };
 
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'senior' | 'secondary_contact'>('secondary_contact');
@@ -217,6 +260,32 @@ export default function RelativeSettings() {
               </View>
             ) : null}
 
+            <View style={styles.pairingBox}>
+              <Text style={styles.inviteResultLabel}>Eller bruk en paringskode</Text>
+              <Text style={styles.inviteHelp}>
+                Lag en 6-sifret kode og les den opp. Den andre logger inn med sin e-post og
+                taster koden på velkomstskjermen. Koden gjelder i 15 minutter.
+              </Text>
+              {pairingError ? <Text style={styles.inviteError}>{pairingError}</Text> : null}
+              <Pressable
+                style={[styles.inviteBtn, pairingBusy && styles.inviteBtnDisabled]}
+                disabled={pairingBusy}
+                onPress={() => void makePairingCode()}
+              >
+                <Text style={styles.inviteBtnText}>
+                  {pairingBusy ? 'Lager kode …' : `Lag paringskode (${inviteRole === 'senior' ? 'senior' : 'pårørende'})`}
+                </Text>
+              </Pressable>
+              {pairingCode ? (
+                <View style={styles.pairingResult}>
+                  <Text selectable style={styles.pairingCodeText}>{pairingCode.code}</Text>
+                  <Text style={styles.inviteNote}>
+                    Gjelder i 15 minutter. Lager du en ny kode, slutter denne å virke.
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+
             {invitations.length > 0 ? (
               <View style={styles.inviteList}>
                 <Text style={styles.inviteResultLabel}>Sendte invitasjoner</Text>
@@ -245,6 +314,33 @@ export default function RelativeSettings() {
           </Card>
         </>
       ) : null}
+
+      {/* Mitt telefonnummer */}
+      <Text style={styles.sectionLabel}>MITT TELEFONNUMMER</Text>
+      <Card>
+        <Text style={styles.inviteHelp}>
+          Med nummer lagret kan {senior?.name ?? 'senior'} ringe deg rett fra appen.
+        </Text>
+        <TextInput
+          style={styles.inviteInput}
+          value={phoneInput}
+          onChangeText={setPhoneInput}
+          placeholder="F.eks. +47 912 34 567"
+          placeholderTextColor={colors.inkFaint}
+          keyboardType="phone-pad"
+          inputMode="tel"
+          autoComplete="tel"
+          accessibilityLabel="Mitt telefonnummer"
+        />
+        {phoneStatus ? <Text style={styles.phoneStatus}>{phoneStatus}</Text> : null}
+        <Pressable
+          style={[styles.inviteBtn, savingPhone && styles.inviteBtnDisabled]}
+          disabled={savingPhone}
+          onPress={() => void savePhone()}
+        >
+          <Text style={styles.inviteBtnText}>{savingPhone ? 'Lagrer …' : 'Lagre nummer'}</Text>
+        </Pressable>
+      </Card>
 
       {/* Varsling */}
       <Text style={styles.sectionLabel}>VARSLING</Text>
@@ -391,6 +487,15 @@ const styles = StyleSheet.create({
   roleChipText: { fontSize: fontSize.md, fontWeight: '700', color: colors.inkSoft },
   roleChipTextOn: { color: colors.brandDark },
   inviteError: { color: colors.attention, fontSize: fontSize.sm, marginTop: spacing(3) },
+  phoneStatus: { color: colors.inkSoft, fontSize: fontSize.sm, marginTop: spacing(2.5) },
+  pairingBox: { marginTop: spacing(4), borderTopWidth: 1, borderTopColor: colors.line, paddingTop: spacing(3) },
+  pairingResult: { alignItems: 'center', marginTop: spacing(3) },
+  pairingCodeText: {
+    fontSize: 40,
+    fontWeight: '800',
+    letterSpacing: 10,
+    color: colors.brandDark,
+  },
   inviteBtn: {
     backgroundColor: colors.brand,
     borderRadius: radius.m,

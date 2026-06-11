@@ -18,6 +18,9 @@ export default function RelativeCalendar() {
   const events = useAppStore((s) => s.events);
   const deleteEvent = useAppStore((s) => s.deleteEvent);
   const senior = useAppStore(selectSenior);
+  const users = useAppStore((s) => s.users);
+
+  const creatorName = (id: string) => users.find((u) => u.id === id)?.name;
 
   const sorted = [...events].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
 
@@ -27,7 +30,15 @@ export default function RelativeCalendar() {
       `«${title}» blir borte fra kalenderen.`,
       [
         { text: 'Avbryt', style: 'cancel' },
-        { text: 'Slett', style: 'destructive', onPress: () => deleteEvent(id) },
+        {
+          text: 'Slett',
+          style: 'destructive',
+          onPress: () => {
+            deleteEvent(id).catch(() =>
+              Alert.alert('Fikk ikke slettet avtalen', 'Sjekk nettet og prøv igjen.'),
+            );
+          },
+        },
       ],
     );
   };
@@ -50,6 +61,9 @@ export default function RelativeCalendar() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.title}>{e.title}</Text>
                 {e.description ? <Text style={styles.desc}>{e.description}</Text> : null}
+                {e.createdBy === senior?.id ? (
+                  <Text style={styles.byTag}>Lagt til av {creatorName(e.createdBy) ?? senior?.name}</Text>
+                ) : null}
               </View>
               <View style={styles.actions}>
                 <Pressable
@@ -119,4 +133,5 @@ const styles = StyleSheet.create({
   },
   addBtnText: { color: colors.white, fontSize: fontSize.md, fontWeight: '700' },
   muted: { fontSize: fontSize.md, color: colors.inkFaint, paddingVertical: spacing(2) },
+  byTag: { fontSize: fontSize.sm, fontWeight: '600', color: colors.brandDark, marginTop: spacing(1) },
 });

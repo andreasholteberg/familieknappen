@@ -6,6 +6,7 @@ export * as group from '@/services/group';
 export * as helpRequests from '@/services/helpRequests';
 export * as helpResponses from '@/services/helpResponses';
 export * as invitations from '@/services/invitations';
+export * as pairing from '@/services/pairing';
 export * as profiles from '@/services/profiles';
 export * as push from '@/services/push';
 export * as realtime from '@/services/realtime';

@@ -132,6 +132,8 @@ interface AppState {
   createGroup: (name: string) => Promise<void>;
   acceptInvite: (token: string) => Promise<{ familyGroupId: string; role: InvitedRole }>;
   createInvite: (input: { email: string; role: 'senior' | 'secondary_contact' }) => Promise<GroupInvitation>;
+  createPairingCode: (role: 'senior' | 'secondary_contact') => Promise<svc.pairing.PairingCode>;
+  pairWithCode: (code: string) => Promise<void>;
   loadInvitations: () => Promise<void>;
   revokeInvite: (id: string) => Promise<void>;
 
@@ -142,9 +144,10 @@ interface AppState {
   respondToRequest: (input: RespondInput) => Promise<void>;
   markAnswerSeen: (requestId: string) => void;
   closeRequest: (requestId: string) => void;
-  addEvent: (event: Omit<CalendarEvent, 'id' | 'createdAt'>) => void;
-  updateEvent: (id: string, patch: Partial<CalendarEvent>) => void;
-  deleteEvent: (id: string) => void;
+  addEvent: (event: Omit<CalendarEvent, 'id' | 'createdAt'>) => Promise<void>;
+  updateEvent: (id: string, patch: Partial<CalendarEvent>) => Promise<void>;
+  deleteEvent: (id: string) => Promise<void>;
+  setMyPhone: (phone: string | null) => Promise<void>;
   setPrimaryContact: (userId: string) => void;
   toggleSetting: (key: 'notifyPush' | 'notifySms') => void;
   setActivitySharing: (enabled: boolean) => void;
@@ -343,6 +346,18 @@ export const useAppStore = create<AppState>((set, get) => ({
     return inv;
   },
 
+  createPairingCode: async (role) => {
+    const { groupId } = get();
+    if (!groupId) throw new Error('Ingen familiegruppe');
+    return svc.pairing.createPairingCode(groupId, role);
+  },
+
+  pairWithCode: async (code) => {
+    const res = await svc.pairing.pairWithCode(code);
+    set({ groupId: res.familyGroupId });
+    await get().refresh();
+  },
+
   loadInvitations: async () => {
     const { groupId } = get();
     if (!groupId) return;
@@ -458,52 +473,53 @@ export const useAppStore = create<AppState>((set, get) => ({
     })();
   },
 
-  addEvent: (event) => {
+  addEvent: async (event) => {
     const { groupId, currentUserId } = get();
-    if (!groupId) return;
-    void (async () => {
-      try {
-        await svc.calendar.addEvent({
-          groupId,
-          createdBy: event.createdBy || currentUserId || '',
-          title: event.title,
-          description: event.description,
-          date: event.date,
-          time: event.time,
-        });
-        await get().refresh();
-      } catch (err) {
-        logError('addEvent', err);
-      }
-    })();
+    if (!groupId) throw new Error('Ingen familiegruppe');
+    await svc.calendar.addEvent({
+      groupId,
+      createdBy: event.createdBy || currentUserId || '',
+      title: event.title,
+      description: event.description,
+      date: event.date,
+      time: event.time,
+    });
+    try {
+      await get().refresh();
+    } catch (err) {
+      logError('refresh etter addEvent', err);
+    }
   },
 
-  updateEvent: (id, patch) => {
-    void (async () => {
-      try {
-        await svc.calendar.updateEvent(id, {
-          title: patch.title,
-          description: patch.description,
-          date: patch.date,
-          time: patch.time,
-        });
-        await get().refresh();
-      } catch (err) {
-        logError('updateEvent', err);
-      }
-    })();
+  updateEvent: async (id, patch) => {
+    await svc.calendar.updateEvent(id, {
+      title: patch.title,
+      description: patch.description,
+      date: patch.date,
+      time: patch.time,
+    });
+    try {
+      await get().refresh();
+    } catch (err) {
+      logError('refresh etter updateEvent', err);
+    }
   },
 
-  deleteEvent: (id) => {
+  deleteEvent: async (id) => {
+    const before = get().events;
     set((s) => ({ events: s.events.filter((e) => e.id !== id) }));
-    void (async () => {
-      try {
-        await svc.calendar.deleteEvent(id);
-        await get().refresh();
-      } catch (err) {
-        logError('deleteEvent', err);
-      }
-    })();
+    try {
+      await svc.calendar.deleteEvent(id);
+    } catch (err) {
+      // Gjenopprett listen hvis slettingen feilet, og la UI vise rolig feil.
+      set({ events: before });
+      throw err;
+    }
+    try {
+      await get().refresh();
+    } catch (err) {
+      logError('refresh etter deleteEvent', err);
+    }
   },
 
   setPrimaryContact: (userId) => {
@@ -522,6 +538,15 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   toggleSetting: (key) =>
     set((state) => ({ settings: { ...state.settings, [key]: !state.settings[key] } })),
+
+  setMyPhone: async (phone) => {
+    const uid = get().currentUserId;
+    if (!uid) throw new Error('Ikke innlogget');
+    await svc.profiles.setPhone(uid, phone);
+    set((s) => ({
+      users: s.users.map((u) => (u.id === uid ? { ...u, phone: phone ?? undefined } : u)),
+    }));
+  },
 
   setActivitySharing: (enabled) => {
     const uid = get().currentUserId;

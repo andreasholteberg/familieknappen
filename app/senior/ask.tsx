@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -50,6 +50,7 @@ function Steps({ step }: { step: number }) {
  */
 export default function AskFamily() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ contact?: string }>();
   const relatives = useAppStore(useShallow(selectRelativeMembers));
   const users = useAppStore((s) => s.users);
   const primary = useAppStore(selectPrimaryContact);
@@ -58,7 +59,9 @@ export default function AskFamily() {
   const [step, setStep] = useState(1);
   const [hasPhoto, setHasPhoto] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const [contactId, setContactId] = useState<string | undefined>(primary?.id);
+  const [contactId, setContactId] = useState<string | undefined>(
+    typeof params.contact === 'string' && params.contact ? params.contact : primary?.id,
+  );
   const [sentToName, setSentToName] = useState('');
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
