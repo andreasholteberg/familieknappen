@@ -65,7 +65,7 @@ export default function Onboarding() {
     setError(null);
     try {
       await createGroup(name);
-      router.replace('/');
+      router.replace('/relative/welcome');
     } catch (e) {
       setError((e as Error)?.message ?? 'Kunne ikke opprette familiegruppen. Prøv igjen.');
     } finally {

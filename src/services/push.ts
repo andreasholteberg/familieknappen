@@ -76,3 +76,12 @@ export async function removePushToken(userId: string, token: string): Promise<vo
     /* ignorer – ikke kritisk */
   }
 }
+
+/**
+ * Varsle hele familien om at noen prøver å ringe (F-029). Best effort:
+ * feil svelges hos kalleren – ringingen skal aldri stoppes av dette.
+ */
+export async function notifyCallAttempt(): Promise<void> {
+  const { error } = await supabase.functions.invoke('notify-call');
+  if (error) throw error;
+}

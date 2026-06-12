@@ -50,8 +50,26 @@ export type Database = {
         Relationships: [];
       };
       family_groups: {
-        Row: { id: string; name: string; created_at: string };
-        Insert: { id?: string; name?: string; created_at?: string };
+        Row: {
+          id: string;
+          name: string;
+          created_at: string;
+          subscription_status: string;
+          billing_admin_user_id: string | null;
+          trial_end: string | null;
+          current_period_end: string | null;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          name?: string;
+          created_at?: string;
+          subscription_status?: string;
+          billing_admin_user_id?: string | null;
+          trial_end?: string | null;
+          current_period_end?: string | null;
+          created_by?: string | null;
+        };
         Update: { id?: string; name?: string };
         Relationships: [];
       };
@@ -98,6 +116,7 @@ export type Database = {
           escalation_level: number;
           closed_at: string | null;
           acknowledged_at: string | null;
+          escalation_stopped_at: string | null;
         };
         Insert: {
           id?: string;

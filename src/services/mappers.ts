@@ -9,6 +9,7 @@ import type {
   ActivityStatus,
   CalendarEvent,
   FamilyGroup,
+  SubscriptionStatus,
   FamilyMember,
   GroupInvitation,
   HelpRequest,
@@ -93,7 +94,12 @@ export function toUser(r: Tables<'profiles'>): User {
 }
 
 export function toFamilyGroup(r: Tables<'family_groups'>): FamilyGroup {
-  return { id: r.id, name: r.name, createdAt: r.created_at };
+  return {
+    id: r.id,
+    name: r.name,
+    createdAt: r.created_at,
+    subscriptionStatus: (r.subscription_status as SubscriptionStatus) ?? 'manual_review',
+  };
 }
 
 export function toFamilyMember(r: Tables<'family_members'>): FamilyMember {

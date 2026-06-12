@@ -26,6 +26,7 @@ export default function RelativeLayout() {
       <Stack.Screen name="event" options={{ title: 'Avtale' }} />
       <Stack.Screen name="history" options={{ title: 'Historikk' }} />
       <Stack.Screen name="settings" options={{ title: 'Innstillinger' }} />
+      <Stack.Screen name="welcome" options={{ title: 'Velkommen', headerBackVisible: false }} />
     </Stack>
   );
 }

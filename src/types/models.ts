@@ -42,11 +42,24 @@ export interface User {
   createdAt: string;
 }
 
+export type SubscriptionStatus =
+  | 'manual_review'
+  | 'trialing'
+  | 'active'
+  | 'past_due'
+  | 'canceled'
+  | 'expired';
+
 export interface FamilyGroup {
   id: string;
   name: string;
   createdAt: string;
+  /** Lisensstatus (F-018). 'manual_review' = pilot/åpen. */
+  subscriptionStatus: SubscriptionStatus;
 }
+
+/** Statuser som sperrer appen med nøytral skjerm (F-019/F-020). */
+export const BLOCKED_SUBSCRIPTION_STATUSES: SubscriptionStatus[] = ['canceled', 'expired'];
 
 export interface FamilyMember {
   id: string;

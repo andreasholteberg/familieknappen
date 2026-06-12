@@ -41,6 +41,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .select('id, family_group_id, senior_id, recipient_id')
     .lte('escalation_due_at', nowIso)
     .eq('escalation_level', 0)
+    .is('escalation_stopped_at', null)
     .in('status', ['SENT', 'DELIVERED', 'VIEWED']);
   if (error) return new Response(error.message, { status: 500 });
 

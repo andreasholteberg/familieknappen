@@ -43,7 +43,7 @@ const POLL_MS = 20_000;
 let pushRegistered = false;
 let currentPushToken: string | null = null;
 
-const EMPTY_GROUP: FamilyGroup = { id: '', name: '', createdAt: '' };
+const EMPTY_GROUP: FamilyGroup = { id: '', name: '', createdAt: '', subscriptionStatus: 'manual_review' };
 const nowISO = (): string => new Date().toISOString();
 const EMPTY_ACTIVITY: ActivityStatus = {
   seniorId: '',

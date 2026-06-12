@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BigButton } from '@/components/BigButton';
 import { selectCurrentUser, useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, spacing } from '@/theme/theme';
+import { BLOCKED_SUBSCRIPTION_STATUSES } from '@/types/models';
 
 /**
  * Inngangspunkt og auth-gate. Bestemmer hvor brukeren skal:
@@ -52,6 +53,12 @@ export default function Index() {
 
   if (!currentUser) {
     return <Redirect href="/onboarding" />;
+  }
+
+  // Lisenssjekk (F-020): nøytral sperreskjerm hvis gruppen ikke er aktiv.
+  const group = useAppStore.getState().group;
+  if (group.id && BLOCKED_SUBSCRIPTION_STATUSES.includes(group.subscriptionStatus)) {
+    return <Redirect href="/license" />;
   }
 
   return <Redirect href={currentUser.role === 'senior' ? '/senior' : '/relative'} />;

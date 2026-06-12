@@ -8,6 +8,7 @@ import { BigButton } from '@/components/BigButton';
 import { Screen } from '@/components/Screen';
 import { selectRelativeMembers, useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, radius, spacing } from '@/theme/theme';
+import * as svc from '@/services';
 import { callPhone, telUrl } from '@/utils/phone';
 
 /**
@@ -47,6 +48,8 @@ export default function CallFamily() {
   }
 
   const callCurrent = async () => {
+    // Gi resten av familien beskjed samtidig (F-029) – aldri blokkerende.
+    svc.push.notifyCallAttempt().catch(() => undefined);
     const ok = await callPhone(current.user?.phone);
     if (ok) setHasCalled(true);
   };
