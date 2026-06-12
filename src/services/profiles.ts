@@ -41,3 +41,21 @@ export async function cancelAccountDeletion(): Promise<void> {
   const { error } = await supabase.rpc('cancel_account_deletion');
   if (error) throw error;
 }
+
+/** Logg samtykke til gjeldende vilkår/personvern (RLS: kun egen profil). */
+export async function acceptLegal(
+  userId: string,
+  versions: { terms: string; privacy: string },
+): Promise<void> {
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      consented_terms_at: now,
+      consented_privacy_at: now,
+      terms_version: versions.terms,
+      privacy_version: versions.privacy,
+    })
+    .eq('id', userId);
+  if (error) throw error;
+}

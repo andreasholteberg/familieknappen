@@ -41,6 +41,9 @@ export interface User {
   activitySharingEnabled?: boolean;
   /** Satt når brukeren har bedt om sletting (30 dagers angrefrist, F-036). */
   deletionRequestedAt?: string;
+  /** Versjonsmerket samtykke (F-041). */
+  termsVersion?: string;
+  privacyVersion?: string;
   createdAt: string;
 }
 

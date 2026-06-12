@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useRouter } from 'expo-router';
+
 import { Screen } from '@/components/Screen';
 import { selectCurrentUser, useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, radius, shadow, spacing } from '@/theme/theme';
@@ -20,6 +22,7 @@ const POINTS = [
 ];
 
 export default function SeniorPrivacy() {
+  const router = useRouter();
   const currentUser = useAppStore(selectCurrentUser);
   const setActivitySharing = useAppStore((s) => s.setActivitySharing);
   const requestDeletion = useAppStore((s) => s.requestAccountDeletion);
@@ -90,6 +93,14 @@ export default function SeniorPrivacy() {
         </Text>
       </View>
 
+      <Pressable
+        accessibilityRole="button"
+        style={styles.fullDocLink}
+        onPress={() => router.push('/privacy-policy')}
+      >
+        <Text style={styles.fullDocLinkText}>Les hele personvernerklæringen</Text>
+      </Pressable>
+
       {currentUser?.deletionRequestedAt ? (
         <View style={[styles.card, shadow.card]}>
           <Text style={styles.deletionTitle}>Kontoen din blir slettet om 30 dager.</Text>
@@ -144,6 +155,8 @@ const styles = StyleSheet.create({
   choiceText: { fontSize: fontSize.title, fontWeight: '800', color: colors.inkSoft },
   choiceTextOn: { color: colors.white },
   toggleHint: { fontSize: fontSize.md, color: colors.inkSoft, marginTop: spacing(4), textAlign: 'center', lineHeight: 26 },
+  fullDocLink: { alignItems: 'center', paddingVertical: spacing(4) },
+  fullDocLinkText: { fontSize: fontSize.md, color: colors.brandDark, textDecorationLine: 'underline' },
   deletionTitle: { fontSize: fontSize.lg, fontWeight: '700', color: colors.ink, textAlign: 'center', lineHeight: 30 },
   undoBtn: {
     backgroundColor: colors.brand,

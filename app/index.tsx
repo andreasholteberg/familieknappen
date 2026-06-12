@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BigButton } from '@/components/BigButton';
 import { selectCurrentUser, useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, spacing } from '@/theme/theme';
+import { LEGAL_VERSIONS } from '@/content/legal';
 import { BLOCKED_SUBSCRIPTION_STATUSES } from '@/types/models';
 
 /**
@@ -59,6 +60,14 @@ export default function Index() {
   const group = useAppStore.getState().group;
   if (group.id && BLOCKED_SUBSCRIPTION_STATUSES.includes(group.subscriptionStatus)) {
     return <Redirect href="/license" />;
+  }
+
+  // Versjonsmerket samtykke (F-041): be om aksept når versjonene er nye.
+  if (
+    currentUser.termsVersion !== LEGAL_VERSIONS.terms ||
+    currentUser.privacyVersion !== LEGAL_VERSIONS.privacy
+  ) {
+    return <Redirect href="/consent" />;
   }
 
   return <Redirect href={currentUser.role === 'senior' ? '/senior' : '/relative'} />;

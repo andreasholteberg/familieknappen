@@ -17,6 +17,7 @@
 import type { RealtimeChannel, Session } from '@supabase/supabase-js';
 import { create } from 'zustand';
 
+import { LEGAL_VERSIONS } from '@/content/legal';
 import * as svc from '@/services';
 import type {
   ActivityStatus,
@@ -148,6 +149,7 @@ interface AppState {
   updateEvent: (id: string, patch: Partial<CalendarEvent>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   setMyPhone: (phone: string | null) => Promise<void>;
+  acceptLegal: () => Promise<void>;
   requestAccountDeletion: () => Promise<void>;
   cancelAccountDeletion: () => Promise<void>;
   setPrimaryContact: (userId: string) => void;
@@ -547,6 +549,22 @@ export const useAppStore = create<AppState>((set, get) => ({
     await svc.profiles.setPhone(uid, phone);
     set((s) => ({
       users: s.users.map((u) => (u.id === uid ? { ...u, phone: phone ?? undefined } : u)),
+    }));
+  },
+
+  acceptLegal: async () => {
+    const uid = get().currentUserId;
+    if (!uid) throw new Error('Ikke innlogget');
+    await svc.profiles.acceptLegal(uid, {
+      terms: LEGAL_VERSIONS.terms,
+      privacy: LEGAL_VERSIONS.privacy,
+    });
+    set((s) => ({
+      users: s.users.map((u) =>
+        u.id === uid
+          ? { ...u, termsVersion: LEGAL_VERSIONS.terms, privacyVersion: LEGAL_VERSIONS.privacy }
+          : u,
+      ),
     }));
   },
 

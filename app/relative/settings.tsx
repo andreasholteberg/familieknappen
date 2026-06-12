@@ -416,6 +416,13 @@ export default function RelativeSettings() {
           • Du kan når som helst be om at kontoen og dataene dine slettes.
         </Text>
 
+        <Pressable style={styles.legalLink} onPress={() => router.push('/privacy-policy')}>
+          <Text style={styles.legalLinkText}>Les personvernerklæringen</Text>
+        </Pressable>
+        <Pressable style={styles.legalLink} onPress={() => router.push('/terms')}>
+          <Text style={styles.legalLinkText}>Les brukervilkårene</Text>
+        </Pressable>
+
         <View style={[styles.settingRow, styles.privacyToggleRow]}>
           <Text style={styles.settingLabel}>Del min aktivitetsstatus med familien</Text>
           <Toggle
@@ -584,6 +591,8 @@ const styles = StyleSheet.create({
     marginTop: spacing(3),
   },
   deleteAccountBtnText: { color: colors.attention, fontSize: fontSize.md, fontWeight: '700' },
+  legalLink: { paddingVertical: spacing(2) },
+  legalLinkText: { fontSize: fontSize.sm, color: colors.brandDark, fontWeight: '700', textDecorationLine: 'underline' },
   versionText: {
     fontSize: fontSize.sm,
     color: colors.inkFaint,

@@ -26,6 +26,10 @@ export type Database = {
           email: string | null;
           activity_sharing_enabled: boolean;
           deletion_requested_at: string | null;
+          consented_terms_at: string | null;
+          consented_privacy_at: string | null;
+          terms_version: string | null;
+          privacy_version: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -37,6 +41,10 @@ export type Database = {
           email?: string | null;
           activity_sharing_enabled?: boolean;
           deletion_requested_at?: string | null;
+          consented_terms_at?: string | null;
+          consented_privacy_at?: string | null;
+          terms_version?: string | null;
+          privacy_version?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -48,6 +56,10 @@ export type Database = {
           email?: string | null;
           activity_sharing_enabled?: boolean;
           deletion_requested_at?: string | null;
+          consented_terms_at?: string | null;
+          consented_privacy_at?: string | null;
+          terms_version?: string | null;
+          privacy_version?: string | null;
           updated_at?: string;
         };
         Relationships: [];
