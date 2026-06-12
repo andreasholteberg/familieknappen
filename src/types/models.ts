@@ -39,6 +39,8 @@ export interface User {
   email?: string;
   /** Om brukeren deler aktivitetsstatus med gruppa (samtykke). */
   activitySharingEnabled?: boolean;
+  /** Satt når brukeren har bedt om sletting (30 dagers angrefrist, F-036). */
+  deletionRequestedAt?: string;
   createdAt: string;
 }
 

@@ -148,6 +148,8 @@ interface AppState {
   updateEvent: (id: string, patch: Partial<CalendarEvent>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   setMyPhone: (phone: string | null) => Promise<void>;
+  requestAccountDeletion: () => Promise<void>;
+  cancelAccountDeletion: () => Promise<void>;
   setPrimaryContact: (userId: string) => void;
   toggleSetting: (key: 'notifyPush' | 'notifySms') => void;
   setActivitySharing: (enabled: boolean) => void;
@@ -545,6 +547,24 @@ export const useAppStore = create<AppState>((set, get) => ({
     await svc.profiles.setPhone(uid, phone);
     set((s) => ({
       users: s.users.map((u) => (u.id === uid ? { ...u, phone: phone ?? undefined } : u)),
+    }));
+  },
+
+  requestAccountDeletion: async () => {
+    const uid = get().currentUserId;
+    if (!uid) throw new Error('Ikke innlogget');
+    const at = await svc.profiles.requestAccountDeletion();
+    set((s) => ({
+      users: s.users.map((u) => (u.id === uid ? { ...u, deletionRequestedAt: at } : u)),
+    }));
+  },
+
+  cancelAccountDeletion: async () => {
+    const uid = get().currentUserId;
+    if (!uid) throw new Error('Ikke innlogget');
+    await svc.profiles.cancelAccountDeletion();
+    set((s) => ({
+      users: s.users.map((u) => (u.id === uid ? { ...u, deletionRequestedAt: undefined } : u)),
     }));
   },
 

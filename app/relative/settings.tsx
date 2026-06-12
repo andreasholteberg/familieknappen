@@ -1,6 +1,7 @@
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Card } from '@/components/Card';
 import { RelativeTabs } from '@/components/RelativeTabs';
@@ -79,6 +80,43 @@ export default function RelativeSettings() {
   const activitySharing = currentUser?.activitySharingEnabled ?? true;
 
   const setMyPhone = useAppStore((s) => s.setMyPhone);
+  const requestDeletion = useAppStore((s) => s.requestAccountDeletion);
+  const cancelDeletion = useAppStore((s) => s.cancelAccountDeletion);
+  const [deletionBusy, setDeletionBusy] = useState(false);
+  const [deletionError, setDeletionError] = useState<string | null>(null);
+
+  const deletionDate = currentUser?.deletionRequestedAt
+    ? fmtDate(new Date(new Date(currentUser.deletionRequestedAt).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString())
+    : null;
+
+  const confirmDeletion = () => {
+    Alert.alert(
+      'Slette kontoen din?',
+      'Kontoen og dataene dine slettes om 30 dager. Du kan angre når som helst frem til da.',
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        {
+          text: 'Slett kontoen min',
+          style: 'destructive',
+          onPress: () => {
+            setDeletionBusy(true);
+            setDeletionError(null);
+            requestDeletion()
+              .catch(() => setDeletionError('Fikk ikke registrert slettingen. Prøv igjen.'))
+              .finally(() => setDeletionBusy(false));
+          },
+        },
+      ],
+    );
+  };
+
+  const undoDeletion = () => {
+    setDeletionBusy(true);
+    setDeletionError(null);
+    cancelDeletion()
+      .catch(() => setDeletionError('Fikk ikke angret slettingen. Prøv igjen.'))
+      .finally(() => setDeletionBusy(false));
+  };
   const createPairingCode = useAppStore((s) => s.createPairingCode);
   const [pairingCode, setPairingCode] = useState<{ code: string; expiresAt: string } | null>(null);
   const [pairingBusy, setPairingBusy] = useState(false);
@@ -399,9 +437,50 @@ export default function RelativeSettings() {
         </Text>
       </View>
 
+      {/* Konto (F-036) */}
+      <Text style={styles.sectionLabel}>KONTO</Text>
+      <Card>
+        {currentUser?.deletionRequestedAt ? (
+          <>
+            <Text style={styles.deletionPending}>
+              Kontoen din slettes {deletionDate}. Frem til da kan du angre.
+            </Text>
+            {deletionError ? <Text style={styles.inviteError}>{deletionError}</Text> : null}
+            <Pressable
+              style={[styles.inviteBtn, deletionBusy && styles.inviteBtnDisabled]}
+              disabled={deletionBusy}
+              onPress={undoDeletion}
+            >
+              <Text style={styles.inviteBtnText}>{deletionBusy ? 'Et øyeblikk …' : 'Angre sletting'}</Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <Text style={styles.inviteHelp}>
+              Du kan be om at kontoen og dataene dine slettes. Slettingen skjer etter 30 dager,
+              og du kan angre frem til da.
+            </Text>
+            {deletionError ? <Text style={styles.inviteError}>{deletionError}</Text> : null}
+            <Pressable
+              style={[styles.deleteAccountBtn, deletionBusy && styles.inviteBtnDisabled]}
+              disabled={deletionBusy}
+              onPress={confirmDeletion}
+            >
+              <Text style={styles.deleteAccountBtnText}>
+                {deletionBusy ? 'Et øyeblikk …' : 'Slett kontoen min'}
+              </Text>
+            </Pressable>
+          </>
+        )}
+      </Card>
+
       <Pressable style={styles.switchBtn} onPress={switchRole}>
         <Text style={styles.switchBtnText}>Logg ut</Text>
       </Pressable>
+
+      <Text style={styles.versionText}>
+        Familieknappen v{Constants.expoConfig?.version ?? '1.0.0'}
+      </Text>
 
       <RelativeTabs />
     </Screen>
@@ -495,6 +574,21 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 10,
     color: colors.brandDark,
+  },
+  deletionPending: { fontSize: fontSize.md, fontWeight: '700', color: colors.ink, marginBottom: spacing(3), lineHeight: 26 },
+  deleteAccountBtn: {
+    backgroundColor: colors.attentionSoft,
+    borderRadius: radius.m,
+    paddingVertical: spacing(4),
+    alignItems: 'center',
+    marginTop: spacing(3),
+  },
+  deleteAccountBtnText: { color: colors.attention, fontSize: fontSize.md, fontWeight: '700' },
+  versionText: {
+    fontSize: fontSize.sm,
+    color: colors.inkFaint,
+    textAlign: 'center',
+    paddingBottom: spacing(4),
   },
   inviteBtn: {
     backgroundColor: colors.brand,

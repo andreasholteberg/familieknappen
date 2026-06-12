@@ -25,6 +25,7 @@ export type Database = {
           phone: string | null;
           email: string | null;
           activity_sharing_enabled: boolean;
+          deletion_requested_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -35,6 +36,7 @@ export type Database = {
           phone?: string | null;
           email?: string | null;
           activity_sharing_enabled?: boolean;
+          deletion_requested_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -45,6 +47,7 @@ export type Database = {
           phone?: string | null;
           email?: string | null;
           activity_sharing_enabled?: boolean;
+          deletion_requested_at?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -314,6 +317,8 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      request_account_deletion: { Args: Record<string, never>; Returns: string };
+      cancel_account_deletion: { Args: Record<string, never>; Returns: undefined };
       create_pairing_code: {
         Args: { p_group: string; p_role?: MemberRoleDb };
         Returns: Json;

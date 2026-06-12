@@ -5,9 +5,6 @@ import { toHelpRequest } from '@/services/mappers';
 import { signedImageUrl } from '@/services/storage';
 import type { HelpRequest } from '@/types/models';
 
-/** Standard forsinkelse før eskalering til sekundærkontakt. */
-export const ESCALATION_DELAY_MINUTES = 10;
-
 export async function listRequests(groupId: string): Promise<HelpRequest[]> {
   const { data, error } = await supabase
     .from('help_requests')
@@ -33,10 +30,10 @@ export interface CreateRequestInput {
   imagePath?: string;
 }
 
-/** Oppretter en forespørsel. «Leveres» umiddelbart til gruppa i MVP. */
+/** Oppretter en forespørsel. «Leveres» umiddelbart til gruppa i MVP.
+ *  Eskaleringsfristen settes av databasen (default now() + 10 min). */
 export async function createRequest(input: CreateRequestInput): Promise<string> {
   const now = new Date().toISOString();
-  const escalationDueAt = new Date(Date.now() + ESCALATION_DELAY_MINUTES * 60_000).toISOString();
   const { data, error } = await supabase
     .from('help_requests')
     .insert({
@@ -47,7 +44,6 @@ export async function createRequest(input: CreateRequestInput): Promise<string> 
       image_path: input.imagePath ?? null,
       status: 'DELIVERED',
       delivered_at: now,
-      escalation_due_at: escalationDueAt,
     })
     .select('id')
     .single();

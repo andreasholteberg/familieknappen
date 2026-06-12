@@ -17,6 +17,12 @@ import {
 import { colors, fontSize, radius, spacing } from '@/theme/theme';
 import { timeAgo } from '@/utils/format';
 
+const isToday = (iso: string): boolean => {
+  const d = new Date(iso);
+  const n = new Date();
+  return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate();
+};
+
 export default function RelativeDashboard() {
   const router = useRouter();
   const senior = useAppStore(selectSenior);
@@ -27,15 +33,34 @@ export default function RelativeDashboard() {
 
   const recent = requests.slice(0, 6);
 
+  // Rolig status-stripe (F-045): observasjoner, aldri konklusjoner.
+  const answeredToday = requests.filter((r) => r.answeredAt && isToday(r.answeredAt)).length;
+  const openedToday = isToday(activity.lastAppOpenedAt);
+  const statusLine =
+    open.length > 0
+      ? `${senior?.name ?? 'Senior'} venter på svar nå.`
+      : answeredToday > 0
+        ? `${senior?.name ?? 'Senior'} har fått hjelp i dag. Alt ser rolig ut.`
+        : openedToday
+          ? 'Alt ser rolig ut i dag.'
+          : 'Ingen aktivitet registrert i dag.';
+
   return (
     <Screen>
+      <View style={[styles.statusStripe, open.length > 0 && styles.statusStripeActive]}>
+        <Text style={[styles.statusStripeText, open.length > 0 && styles.statusStripeTextActive]}>
+          {statusLine}
+        </Text>
+      </View>
+
       {/* Senior-banner: navn + trygghetsstatus (ikke-invaderende) */}
       <View style={styles.banner}>
         <Avatar name={senior?.name ?? '?'} size={54} onDark />
         <View style={styles.bannerBody}>
           <Text style={styles.bannerName}>{senior?.name}</Text>
           <Text style={styles.bannerSeen}>
-            Sist aktiv {timeAgo(activity.lastSeenAt)} · Åpnet appen i dag ✓
+            Sist aktiv {timeAgo(activity.lastSeenAt)}
+            {openedToday ? ' · Åpnet appen i dag ✓' : ''}
           </Text>
         </View>
       </View>
@@ -100,6 +125,16 @@ export default function RelativeDashboard() {
 }
 
 const styles = StyleSheet.create({
+  statusStripe: {
+    backgroundColor: colors.calmGreenSoft,
+    borderRadius: radius.s,
+    paddingVertical: spacing(2.5),
+    paddingHorizontal: spacing(3.5),
+    marginBottom: spacing(3),
+  },
+  statusStripeActive: { backgroundColor: colors.brandSoft },
+  statusStripeText: { fontSize: fontSize.sm, fontWeight: '700', color: colors.ink },
+  statusStripeTextActive: { color: colors.brandDark },
   banner: {
     flexDirection: 'row',
     alignItems: 'center',

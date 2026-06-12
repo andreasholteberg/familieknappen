@@ -26,6 +26,7 @@ export default function Invite() {
   const token = params.token ?? pending ?? null;
   const [phase, setPhase] = useState<Phase>('idle');
   const [message, setMessage] = useState('');
+  const [acceptedRole, setAcceptedRole] = useState<string | null>(null);
   const started = useRef(false);
 
   // Lagre token før innlogging, slik at gaten kan komme tilbake hit etterpå.
@@ -39,7 +40,10 @@ export default function Invite() {
     started.current = true;
     setPhase('accepting');
     acceptInvite(token)
-      .then(() => setPhase('done'))
+      .then((res) => {
+        setAcceptedRole(res.role);
+        setPhase('done');
+      })
       .catch((e) => {
         setMessage((e as Error)?.message ?? 'Kunne ikke godta invitasjonen.');
         setPhase('error');
@@ -91,7 +95,14 @@ export default function Invite() {
         <Text style={styles.emoji}>✓</Text>
         <Text style={styles.title}>Du er med i familien</Text>
         <Text style={styles.muted}>Invitasjonen er godtatt. Da er du klar.</Text>
-        <BigButton label="Fortsett" variant="primary" compact onPress={() => router.replace('/')} />
+        <BigButton
+          label="Fortsett"
+          variant="primary"
+          compact
+          onPress={() =>
+            router.replace(acceptedRole && acceptedRole !== 'senior' ? '/relative/welcome' : '/')
+          }
+        />
       </SafeAreaView>
     );
   }

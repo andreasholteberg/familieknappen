@@ -28,3 +28,16 @@ export async function setPhone(userId: string, phone: string | null): Promise<vo
   const { error } = await supabase.from('profiles').update({ phone }).eq('id', userId);
   if (error) throw error;
 }
+
+/** Be om sletting av egen konto (30 dagers angrefrist). Returnerer tidspunkt. */
+export async function requestAccountDeletion(): Promise<string> {
+  const { data, error } = await supabase.rpc('request_account_deletion');
+  if (error) throw error;
+  return data as string;
+}
+
+/** Angre en bestilt sletting. */
+export async function cancelAccountDeletion(): Promise<void> {
+  const { error } = await supabase.rpc('cancel_account_deletion');
+  if (error) throw error;
+}

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
 import { selectCurrentUser, useAppStore } from '@/store/useAppStore';
@@ -22,7 +22,33 @@ const POINTS = [
 export default function SeniorPrivacy() {
   const currentUser = useAppStore(selectCurrentUser);
   const setActivitySharing = useAppStore((s) => s.setActivitySharing);
+  const requestDeletion = useAppStore((s) => s.requestAccountDeletion);
+  const cancelDeletion = useAppStore((s) => s.cancelAccountDeletion);
   const sharing = currentUser?.activitySharingEnabled ?? true;
+  const [busy, setBusy] = useState(false);
+
+  const confirmDeletion = () => {
+    Alert.alert(
+      'Slette kontoen din?',
+      'Alt du har sendt blir borte om 30 dager. Du kan angre frem til da. Snakk gjerne med familien først.',
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        {
+          text: 'Ja, slett',
+          style: 'destructive',
+          onPress: () => {
+            setBusy(true);
+            requestDeletion().catch(() => undefined).finally(() => setBusy(false));
+          },
+        },
+      ],
+    );
+  };
+
+  const undoDeletion = () => {
+    setBusy(true);
+    cancelDeletion().catch(() => undefined).finally(() => setBusy(false));
+  };
 
   return (
     <Screen>
@@ -63,6 +89,29 @@ export default function SeniorPrivacy() {
             : 'Familien ser ikke aktiviteten din.'}
         </Text>
       </View>
+
+      {currentUser?.deletionRequestedAt ? (
+        <View style={[styles.card, shadow.card]}>
+          <Text style={styles.deletionTitle}>Kontoen din blir slettet om 30 dager.</Text>
+          <Pressable
+            accessibilityRole="button"
+            style={styles.undoBtn}
+            disabled={busy}
+            onPress={undoDeletion}
+          >
+            <Text style={styles.undoBtnText}>{busy ? 'Et øyeblikk …' : 'Angre sletting'}</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          style={styles.deleteLink}
+          disabled={busy}
+          onPress={confirmDeletion}
+        >
+          <Text style={styles.deleteLinkText}>Slett kontoen og dataene mine</Text>
+        </Pressable>
+      )}
     </Screen>
   );
 }
@@ -95,4 +144,15 @@ const styles = StyleSheet.create({
   choiceText: { fontSize: fontSize.title, fontWeight: '800', color: colors.inkSoft },
   choiceTextOn: { color: colors.white },
   toggleHint: { fontSize: fontSize.md, color: colors.inkSoft, marginTop: spacing(4), textAlign: 'center', lineHeight: 26 },
+  deletionTitle: { fontSize: fontSize.lg, fontWeight: '700', color: colors.ink, textAlign: 'center', lineHeight: 30 },
+  undoBtn: {
+    backgroundColor: colors.brand,
+    borderRadius: radius.m,
+    paddingVertical: spacing(4),
+    alignItems: 'center',
+    marginTop: spacing(4),
+  },
+  undoBtnText: { color: colors.white, fontSize: fontSize.lg, fontWeight: '800' },
+  deleteLink: { alignItems: 'center', paddingVertical: spacing(5), marginTop: spacing(2) },
+  deleteLinkText: { fontSize: fontSize.md, color: colors.inkFaint, textDecorationLine: 'underline' },
 });

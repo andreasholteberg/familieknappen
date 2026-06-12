@@ -1171,3 +1171,91 @@ create trigger on_help_response_stop_escalation
 -- trenger ikke å sette inn rader direkte. Uten insert-policy nekter RLS alt.
 
 drop policy if exists family_groups_insert on public.family_groups;
+-- Familieknappen - Fase 2A: eskaleringsfristen settes av databasen (R5 i
+-- RLS-revisjonen). Klienten slutter å sende escalation_due_at; default
+-- gjelder alle nye forespørsler og kan ikke manipuleres fra klient.
+
+alter table public.help_requests
+  alter column escalation_due_at set default (now() + interval '10 minutes');
+-- Familieknappen - Fase 2A: nøktern datahygiene. Kjøres av cron via
+-- purge-accounts-funksjonen (service role). Ikke kallbar fra klient.
+
+create or replace function public.purge_old_records()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_logs int;
+  v_attempts int;
+  v_codes int;
+begin
+  delete from public.notification_log where created_at < now() - interval '90 days';
+  get diagnostics v_logs = row_count;
+
+  delete from public.pairing_attempts where attempted_at < now() - interval '30 days';
+  get diagnostics v_attempts = row_count;
+
+  delete from public.pairing_codes
+   where created_at < now() - interval '30 days'
+     and (used_at is not null or revoked_at is not null or expires_at < now());
+  get diagnostics v_codes = row_count;
+
+  return jsonb_build_object('logs', v_logs, 'attempts', v_attempts, 'codes', v_codes);
+end;
+$$;
+
+revoke execute on function public.purge_old_records() from public;
+revoke execute on function public.purge_old_records() from authenticated;
+grant execute on function public.purge_old_records() to service_role;
+-- Familieknappen - Fase 2A (F-036): konto-/datasletting med 30 dagers
+-- angrefrist. Brukeren ber om sletting i appen; endelig sletting gjøres av
+-- purge-accounts-funksjonen (service role + auth admin) etter fristen.
+-- FK-kjeden auth.users -> profiles -> (members/requests/responses/tokens/
+-- activity) er ON DELETE CASCADE, så én auth-sletting fjerner brukerens data.
+
+alter table public.profiles
+  add column if not exists deletion_requested_at timestamptz;
+
+create or replace function public.request_account_deletion()
+returns timestamptz
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_at  timestamptz := now();
+begin
+  if v_uid is null then
+    raise exception 'Ikke innlogget';
+  end if;
+  update public.profiles
+     set deletion_requested_at = v_at
+   where id = v_uid
+     and deletion_requested_at is null;
+  return v_at;
+end;
+$$;
+
+create or replace function public.cancel_account_deletion()
+returns void
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_uid uuid := auth.uid();
+begin
+  if v_uid is null then
+    raise exception 'Ikke innlogget';
+  end if;
+  update public.profiles
+     set deletion_requested_at = null
+   where id = v_uid;
+end;
+$$;
+
+grant execute on function public.request_account_deletion() to authenticated;
+grant execute on function public.cancel_account_deletion() to authenticated;

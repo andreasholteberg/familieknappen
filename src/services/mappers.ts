@@ -89,6 +89,7 @@ export function toUser(r: Tables<'profiles'>): User {
     phone: r.phone ?? undefined,
     email: r.email ?? undefined,
     activitySharingEnabled: r.activity_sharing_enabled,
+    deletionRequestedAt: r.deletion_requested_at ?? undefined,
     createdAt: r.created_at,
   };
 }
