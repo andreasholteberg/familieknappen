@@ -8,6 +8,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
+import { cachedSignedUrl } from '@/services/signedUrl';
 import type { FamilyPhoto } from '@/types/models';
 
 const BUCKET = 'family-photos';
@@ -35,19 +36,14 @@ export async function listPhotos(groupId: string): Promise<FamilyPhoto[]> {
   if (error) throw error;
 
   return Promise.all(
-    (data ?? []).map(async (row) => {
-      const { data: signed } = await supabase.storage
-        .from(BUCKET)
-        .createSignedUrl(row.storage_path, 3600);
-      return {
-        id: row.id,
-        groupId: row.family_group_id,
-        uploadedBy: row.uploaded_by,
-        imageUri: signed?.signedUrl,
-        caption: row.caption ?? undefined,
-        createdAt: row.created_at,
-      };
-    }),
+    (data ?? []).map(async (row) => ({
+      id: row.id,
+      groupId: row.family_group_id,
+      uploadedBy: row.uploaded_by,
+      imageUri: await cachedSignedUrl(BUCKET, row.storage_path),
+      caption: row.caption ?? undefined,
+      createdAt: row.created_at,
+    })),
   );
 }
 

@@ -13,6 +13,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
+import { cachedSignedUrl } from '@/services/signedUrl';
 
 const BUCKET = 'help-images';
 
@@ -52,9 +53,7 @@ export async function uploadHelpImage(
   return path;
 }
 
-/** Tidsbegrenset URL for visning (1 time). undefined hvis den ikke kan lages. */
+/** Tidsbegrenset visnings-URL. Gjenbrukes i 45 min (stabil URI = bildecache). */
 export async function signedImageUrl(path: string): Promise<string | undefined> {
-  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, 3600);
-  if (error) return undefined;
-  return data?.signedUrl;
+  return cachedSignedUrl(BUCKET, path);
 }

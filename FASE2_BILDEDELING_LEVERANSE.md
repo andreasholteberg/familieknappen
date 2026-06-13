@@ -26,9 +26,21 @@ besluttet med Andreas. Additiv funksjon – kjerneflyten er urørt.
   tastaturet i meldingsfeltet («Spør familien») og snakk. Finnes gratis i
   systemtastaturet; verifiser at det fungerer på mors telefon (§ 9.1.6).
 
+## Lagringsoptimalisering (tillegg)
+- **Nedskalering ved opplasting:** alle bilder (hjelpebilder + familiebilder)
+  skaleres nå til maks 1280 px før opplasting (`expo-image-manipulator`) –
+  ~150–300 KB i stedet for 1–3 MB. Feiler nedskaleringen brukes originalen.
+- **Signert-URL-cache (45 min):** bilde-URL-er gjenbrukes mellom
+  oppdateringer, så telefonens bildecache faktisk virker. Uten dette lastet
+  appen bildene på nytt hvert 20. sekund (polling) – en egress-feller på
+  Supabase-kvoten. Cachen tømmes ved utlogging.
+- Konsekvens: gratis-planen (1 GB lagring / 5 GB egress) holder romslig for
+  piloten; Pro-planen holder for hundrevis av familier.
+
 ## Må gjøres manuelt
 1. Kjør migreringen (db push / combined_setup.sql).
-2. Ny APK (ren JS/SQL – ingen nye native moduler).
+2. Ny APK – **kreves nå uansett**: `expo-image-manipulator` er en ny native
+   modul.
 
 ## Testpunkter
 1. Pårørende sender bilde med hilsen → vises i fanen; senior ser det stort

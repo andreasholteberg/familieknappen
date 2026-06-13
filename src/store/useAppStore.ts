@@ -209,6 +209,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           pollTimer = null;
           pushRegistered = false;
           currentPushToken = null;
+          svc.clearSignedUrlCache();
           set({
             status: 'signedOut',
             users: [],
