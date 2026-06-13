@@ -31,6 +31,7 @@ export async function listPhotos(groupId: string): Promise<FamilyPhoto[]> {
     .from('family_photos')
     .select('*')
     .eq('family_group_id', groupId)
+    .neq('storage_path', 'pending')
     .order('created_at', { ascending: false })
     .limit(MAX_PHOTOS);
   if (error) throw error;
@@ -86,7 +87,11 @@ export async function uploadFamilyPhoto(input: {
     .from('family_photos')
     .update({ storage_path: path })
     .eq('id', data.id);
-  if (updateError) throw updateError;
+  if (updateError) {
+    await supabase.storage.from(BUCKET).remove([path]);
+    await supabase.from('family_photos').delete().eq('id', data.id);
+    throw updateError;
+  }
 }
 
 /** Slett et bilde (RLS: egen opplasting, eller primærkontakt). */

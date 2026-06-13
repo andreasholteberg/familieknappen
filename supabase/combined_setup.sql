@@ -1301,6 +1301,18 @@ create policy family_photos_insert on public.family_photos
   );
 
 -- Avsender kan slette sitt eget bilde; primærkontakt kan rydde i gruppas.
+drop policy if exists family_photos_update on public.family_photos;
+create policy family_photos_update on public.family_photos
+  for update to authenticated
+  using (
+    uploaded_by = auth.uid()
+    and public.is_group_member(family_group_id)
+  )
+  with check (
+    uploaded_by = auth.uid()
+    and public.is_group_member(family_group_id)
+  );
+
 drop policy if exists family_photos_delete on public.family_photos;
 create policy family_photos_delete on public.family_photos
   for delete to authenticated
