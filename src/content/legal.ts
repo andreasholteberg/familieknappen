@@ -10,7 +10,7 @@
  */
 
 export const LEGAL_VERSIONS = {
-  privacy: '2026-06-16',
+  privacy: '2026-06-17', // + bildedeling i familiegruppen (F-063)
   terms: '2026-06-16',
 } as const;
 
@@ -43,7 +43,8 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
       'For å levere tjenesten du har avtale om (GDPR artikkel 6 nr. 1 bokstav b) ' +
       'behandler vi: navn og e-postadresse (konto og innlogging), telefonnummer hvis du ' +
       'legger det inn (ringeknappene), meldinger og bilder du selv sender som ' +
-      'hjelpespørsmål, svar fra familien, og kalenderavtaler. ' +
+      'hjelpespørsmål, bilder og hilsener dere deler med familiegruppen, svar fra ' +
+      'familien, og kalenderavtaler. ' +
       'Med ditt samtykke (bokstav a) deler vi «sist aktiv»-status med familiegruppen ' +
       'din – dette styrer du selv med en egen bryter, og du kan trekke samtykket når ' +
       'som helst uten begrunnelse. ' +
@@ -64,7 +65,8 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
   {
     heading: 'Hvem som ser opplysningene',
     body:
-      'Bilder, meldinger, svar og kalender deles bare med medlemmene i din egen ' +
+      'Bilder (både hjelpespørsmål og delte familiebilder), meldinger, svar og ' +
+      'kalender deles bare med medlemmene i din egen ' +
       'familiegruppe. «Sist aktiv» deles bare hvis du har samtykket. Ingen andre ' +
       'familier eller utenforstående har tilgang. Tilgangen er teknisk avgrenset på ' +
       'databasenivå (radnivå-sikkerhet).',

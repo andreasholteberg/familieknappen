@@ -1,6 +1,6 @@
 # Personvernerklæring for Familieknappen
 
-_Versjon 2026-06-16 · UTKAST – ikke advokat-gjennomgått_
+_Versjon 2026-06-17 · UTKAST – ikke advokat-gjennomgått_
 
 ## Hvem som er ansvarlig
 
@@ -12,7 +12,7 @@ Familieknappen lar en senior spørre sin egen familiegruppe om hjelp før hen sv
 
 ## Hvilke opplysninger vi behandler – og hvorfor
 
-For å levere tjenesten du har avtale om (GDPR artikkel 6 nr. 1 bokstav b) behandler vi: navn og e-postadresse (konto og innlogging), telefonnummer hvis du legger det inn (ringeknappene), meldinger og bilder du selv sender som hjelpespørsmål, svar fra familien, og kalenderavtaler. Med ditt samtykke (bokstav a) deler vi «sist aktiv»-status med familiegruppen din – dette styrer du selv med en egen bryter, og du kan trekke samtykket når som helst uten begrunnelse. Av hensyn til sikkerhet og feilsøking (berettiget interesse, bokstav f) lagrer vi en kort logg over sendte varsler og over bruk av paringskoder. For å oppfylle rettslige plikter (bokstav c) lagrer vi når du godtok vilkårene og denne erklæringen.
+For å levere tjenesten du har avtale om (GDPR artikkel 6 nr. 1 bokstav b) behandler vi: navn og e-postadresse (konto og innlogging), telefonnummer hvis du legger det inn (ringeknappene), meldinger og bilder du selv sender som hjelpespørsmål, bilder og hilsener dere deler med familiegruppen, svar fra familien, og kalenderavtaler. Med ditt samtykke (bokstav a) deler vi «sist aktiv»-status med familiegruppen din – dette styrer du selv med en egen bryter, og du kan trekke samtykket når som helst uten begrunnelse. Av hensyn til sikkerhet og feilsøking (berettiget interesse, bokstav f) lagrer vi en kort logg over sendte varsler og over bruk av paringskoder. For å oppfylle rettslige plikter (bokstav c) lagrer vi når du godtok vilkårene og denne erklæringen.
 
 ## Det vi ikke gjør
 
@@ -20,7 +20,7 @@ Vi bruker ikke GPS eller stedssporing, henter ikke kontaktene dine, selger ikke 
 
 ## Hvem som ser opplysningene
 
-Bilder, meldinger, svar og kalender deles bare med medlemmene i din egen familiegruppe. «Sist aktiv» deles bare hvis du har samtykket. Ingen andre familier eller utenforstående har tilgang. Tilgangen er teknisk avgrenset på databasenivå (radnivå-sikkerhet).
+Bilder (både hjelpespørsmål og delte familiebilder), meldinger, svar og kalender deles bare med medlemmene i din egen familiegruppe. «Sist aktiv» deles bare hvis du har samtykket. Ingen andre familier eller utenforstående har tilgang. Tilgangen er teknisk avgrenset på databasenivå (radnivå-sikkerhet).
 
 ## Databehandlere og hvor data lagres
 

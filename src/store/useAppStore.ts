@@ -25,6 +25,7 @@ import type {
   ConsentRecord,
   FamilyGroup,
   FamilyMember,
+  FamilyPhoto,
   GroupInvitation,
   GroupSettings,
   HelpRequest,
@@ -118,6 +119,7 @@ interface AppState {
   consents: ConsentRecord[];
   settings: GroupSettings;
   invitations: GroupInvitation[];
+  photos: FamilyPhoto[];
 
   // referanse til siste opprettede forespørsel (bekreftelsesskjerm)
   lastRequestId: string | null;
@@ -150,6 +152,8 @@ interface AppState {
   updateEvent: (id: string, patch: Partial<CalendarEvent>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   setMyPhone: (phone: string | null) => Promise<void>;
+  addPhoto: (input: { localUri: string; caption?: string }) => Promise<void>;
+  deletePhoto: (photo: FamilyPhoto) => Promise<void>;
   acceptLegal: () => Promise<void>;
   requestAccountDeletion: () => Promise<void>;
   cancelAccountDeletion: () => Promise<void>;
@@ -181,6 +185,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   consents: [],
   settings: DEFAULT_SETTINGS,
   invitations: [],
+  photos: [],
 
   lastRequestId: null,
   pendingInviteToken: null,
@@ -215,6 +220,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             activity: EMPTY_ACTIVITY,
             consents: [],
             invitations: [],
+            photos: [],
             groupId: null,
             pushAvailable: null,
           });
@@ -268,10 +274,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       const senior = ctx.users.find((u) => u.role === 'senior');
       const seniorId = senior?.id ?? userId;
 
-      const [requests, events, activity] = await Promise.all([
+      const [requests, events, activity, photos] = await Promise.all([
         svc.helpRequests.listRequests(groupId),
         svc.calendar.listEvents(groupId, seniorId),
         svc.activity.getActivity(seniorId),
+        svc.photos.listPhotos(groupId).catch(() => [] as FamilyPhoto[]),
       ]);
       const responses = await svc.helpResponses.listResponses(requests.map((r) => r.id));
 
@@ -288,6 +295,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         requests,
         responses,
         events,
+        photos,
         activity: activity ?? { ...EMPTY_ACTIVITY, seniorId },
         consents: deriveConsents(ctx.members, ctx.users),
         settings: { ...s.settings, primaryContactUserId: primary?.userId ?? '' },
@@ -583,6 +591,25 @@ export const useAppStore = create<AppState>((set, get) => ({
           : u,
       ),
     }));
+  },
+
+  addPhoto: async ({ localUri, caption }) => {
+    const { groupId, currentUserId } = get();
+    if (!groupId || !currentUserId) throw new Error('Ikke innlogget');
+    await svc.photos.uploadFamilyPhoto({ groupId, uploadedBy: currentUserId, localUri, caption });
+    const photos = await svc.photos.listPhotos(groupId);
+    set({ photos });
+  },
+
+  deletePhoto: async (photo) => {
+    const before = get().photos;
+    set((s) => ({ photos: s.photos.filter((p) => p.id !== photo.id) }));
+    try {
+      await svc.photos.deleteFamilyPhoto(photo);
+    } catch (err) {
+      set({ photos: before });
+      throw err;
+    }
   },
 
   requestAccountDeletion: async () => {

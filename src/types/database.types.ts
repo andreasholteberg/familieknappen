@@ -88,6 +88,29 @@ export type Database = {
         Update: { id?: string; name?: string };
         Relationships: [];
       };
+      family_photos: {
+        Row: {
+          id: string;
+          family_group_id: string;
+          uploaded_by: string;
+          storage_path: string;
+          caption: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          family_group_id: string;
+          uploaded_by: string;
+          storage_path: string;
+          caption?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          storage_path?: string;
+          caption?: string | null;
+        };
+        Relationships: [];
+      };
       family_members: {
         Row: {
           id: string;

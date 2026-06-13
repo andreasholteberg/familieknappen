@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useShallow } from 'zustand/react/shallow';
 
 import { Avatar } from '@/components/Avatar';
+import { BigButton } from '@/components/BigButton';
 import { Screen } from '@/components/Screen';
 import { selectRelativeMembers, useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, radius, shadow, spacing } from '@/theme/theme';
@@ -23,8 +24,19 @@ export default function MyFamily() {
     (a, b) => Number(b.isPrimaryContact) - Number(a.isPrimaryContact),
   );
 
+  const photoCount = useAppStore((s) => s.photos.length);
+
   return (
     <Screen>
+      <BigButton
+        icon="🖼️"
+        label="Bilder fra familien"
+        hint={photoCount > 0 ? `${photoCount} bilder å se` : undefined}
+        variant="day"
+        compact
+        onPress={() => router.push('/senior/photos')}
+      />
+
       {sorted.length === 0 ? (
         <Text style={styles.empty}>Familien din dukker opp her når de er med.</Text>
       ) : null}

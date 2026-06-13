@@ -22,6 +22,7 @@ export default function RelativeLayout() {
     >
       <Stack.Screen name="index" options={{ title: 'Oversikt', headerBackVisible: false }} />
       <Stack.Screen name="request/[id]" options={{ title: 'Forespørsel' }} />
+      <Stack.Screen name="photos" options={{ title: 'Bilder fra familien' }} />
       <Stack.Screen name="calendar" options={{ title: 'Kalender' }} />
       <Stack.Screen name="event" options={{ title: 'Avtale' }} />
       <Stack.Screen name="history" options={{ title: 'Historikk' }} />

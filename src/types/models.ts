@@ -131,6 +131,17 @@ export interface ActivityStatus {
   updatedAt: string;
 }
 
+/** Et delt familiebilde (F-063). */
+export interface FamilyPhoto {
+  id: string;
+  groupId: string;
+  uploadedBy: string;
+  /** Signert visnings-URL (1 time). */
+  imageUri?: string;
+  caption?: string;
+  createdAt: string;
+}
+
 /** Samtykkeregister (styringsdokument 5.9 / datamodell ConsentRecords). */
 export interface ConsentRecord {
   id: string;

@@ -4,10 +4,16 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, fontSize, radius, spacing } from '@/theme/theme';
 
-type TabKey = '/relative' | '/relative/calendar' | '/relative/history' | '/relative/settings';
+type TabKey =
+  | '/relative'
+  | '/relative/photos'
+  | '/relative/calendar'
+  | '/relative/history'
+  | '/relative/settings';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: '/relative', label: 'Hjem' },
+  { key: '/relative/photos', label: 'Bilder' },
   { key: '/relative/calendar', label: 'Kalender' },
   { key: '/relative/history', label: 'Logg' },
   { key: '/relative/settings', label: 'Mer' },
