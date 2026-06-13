@@ -11,6 +11,8 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+type FamilyPhotoRow = { storage_path: string | null };
+
 Deno.serve(async (req: Request): Promise<Response> => {
   const secret = Deno.env.get('PUSH_WEBHOOK_SECRET');
   if (secret && req.headers.get('x-webhook-secret') !== secret) {
@@ -33,6 +35,26 @@ Deno.serve(async (req: Request): Promise<Response> => {
   let deleted = 0;
   const errors: string[] = [];
   for (const row of (due ?? []) as { id: string }[]) {
+    const { data: photos, error: photosError } = await admin
+      .from('family_photos')
+      .select('storage_path')
+      .eq('uploaded_by', row.id);
+    if (photosError) {
+      errors.push(`${row.id}: ${photosError.message}`);
+      continue;
+    }
+
+    const photoPaths = ((photos ?? []) as FamilyPhotoRow[])
+      .map((p) => p.storage_path)
+      .filter((path): path is string => Boolean(path));
+    if (photoPaths.length > 0) {
+      const { error: storageError } = await admin.storage.from('family-photos').remove(photoPaths);
+      if (storageError) {
+        errors.push(`${row.id}: ${storageError.message}`);
+        continue;
+      }
+    }
+
     // Sletter auth-brukeren; FK-kaskaden fjerner profil og brukerdata.
     const { error: delError } = await admin.auth.admin.deleteUser(row.id);
     if (delError) errors.push(`${row.id}: ${delError.message}`);

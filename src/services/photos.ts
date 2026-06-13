@@ -91,8 +91,10 @@ export async function uploadFamilyPhoto(input: {
 
 /** Slett et bilde (RLS: egen opplasting, eller primærkontakt). */
 export async function deleteFamilyPhoto(photo: FamilyPhoto): Promise<void> {
+  const path = `${photo.groupId}/${photo.id}.jpg`;
+  const { error: storageError } = await supabase.storage.from(BUCKET).remove([path]);
+  if (storageError) throw storageError;
+
   const { error } = await supabase.from('family_photos').delete().eq('id', photo.id);
   if (error) throw error;
-  // Best effort – fila ryddes; raden er allerede borte.
-  await supabase.storage.from(BUCKET).remove([`${photo.groupId}/${photo.id}.jpg`]);
 }
