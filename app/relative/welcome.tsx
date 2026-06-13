@@ -33,6 +33,14 @@ const STEPS = [
       'Med nummeret ditt lagret kan senior ringe deg rett fra appen. ' +
       'Det gjør du også i Innstillinger – det tar ti sekunder.',
   },
+  {
+    icon: '🔔',
+    title: 'Sjekk varslene på begge telefoner',
+    text:
+      'Godta varsler når appen spør – ellers ser dere ikke spørsmål og svar med en gang. ' +
+      'På seniors telefon: sjekk også at batterisparing ikke stopper appen ' +
+      '(Innstillinger → Batteri → unntak for Familieknappen).',
+  },
 ];
 
 export default function RelativeWelcome() {

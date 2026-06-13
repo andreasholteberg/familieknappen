@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text } from 'react-native';
 
 import { useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, radius, spacing } from '@/theme/theme';
@@ -13,9 +13,22 @@ export function RoleSwitchButton() {
   const router = useRouter();
   const signOut = useAppStore((s) => s.signOut);
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.replace('/');
+  const handleSignOut = () => {
+    // Vern mot feiltrykk (F-066): en utlogget senior trenger hjelp for å
+    // komme inn igjen, så vi bekrefter alltid først.
+    Alert.alert('Vil du logge ut?', 'Du trenger en ny kode på e-post for å logge inn igjen.', [
+      { text: 'Bli innlogget', style: 'cancel' },
+      {
+        text: 'Logg ut',
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            await signOut();
+            router.replace('/');
+          })();
+        },
+      },
+    ]);
   };
 
   return (

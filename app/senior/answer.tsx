@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from '@/components/BigButton';
@@ -29,6 +29,8 @@ export default function SeniorAnswer() {
   const requests = useAppStore((s) => s.requests);
   const users = useAppStore((s) => s.users);
   const markAnswerSeen = useAppStore((s) => s.markAnswerSeen);
+  const undoAnswerSeen = useAppStore((s) => s.undoAnswerSeen);
+  const [acked, setAcked] = useState(false);
 
   const request =
     requests.find((r) => r.id === params.id) ??
@@ -61,7 +63,12 @@ export default function SeniorAnswer() {
 
   const acknowledge = () => {
     markAnswerSeen(request.id);
-    router.replace('/senior');
+    setAcked(true);
+  };
+
+  const undo = () => {
+    undoAnswerSeen(request.id);
+    setAcked(false);
   };
 
   return (
@@ -82,8 +89,18 @@ export default function SeniorAnswer() {
         />
       ) : null}
 
-      <BigButton label="Jeg har sett svaret" variant="primary" onPress={acknowledge} />
-      <BigButton label="Tilbake" variant="day" compact onPress={() => router.back()} />
+      {acked ? (
+        <View style={styles.ackBox}>
+          <Text style={styles.ackText}>Sett ✓ Du finner svaret igjen under «Tidligere svar».</Text>
+          <BigButton label="Til hjem" variant="primary" compact onPress={() => router.replace('/senior')} />
+          <BigButton label="Angre" variant="day" compact onPress={undo} />
+        </View>
+      ) : (
+        <>
+          <BigButton label="Jeg har sett svaret" variant="primary" onPress={acknowledge} />
+          <BigButton label="Tilbake" variant="day" compact onPress={() => router.back()} />
+        </>
+      )}
     </Screen>
   );
 }
@@ -102,4 +119,13 @@ const styles = StyleSheet.create({
   big: { fontSize: fontSize.title, fontWeight: '800', color: colors.ink, textAlign: 'center', lineHeight: 36 },
   note: { fontSize: fontSize.body, color: colors.inkSoft, textAlign: 'center', marginTop: spacing(3), lineHeight: 28 },
   empty: { fontSize: fontSize.body, color: colors.inkFaint, textAlign: 'center', marginVertical: spacing(10) },
+  ackBox: { marginTop: spacing(1) },
+  ackText: {
+    fontSize: fontSize.body,
+    fontWeight: '700',
+    color: colors.calmGreen,
+    textAlign: 'center',
+    marginBottom: spacing(4),
+    lineHeight: 28,
+  },
 });

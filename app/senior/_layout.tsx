@@ -25,6 +25,7 @@ export default function SeniorLayout() {
       <Stack.Screen name="answer" options={{ title: 'Svar fra familien' }} />
       <Stack.Screen name="call" options={{ title: 'Ring familien' }} />
       <Stack.Screen name="family" options={{ title: 'Min familie' }} />
+      <Stack.Screen name="welcome" options={{ title: 'Velkommen', headerBackVisible: false }} />
       <Stack.Screen name="history" options={{ title: 'Tidligere svar' }} />
       <Stack.Screen name="add-event" options={{ title: 'Legg til avtale' }} />
       <Stack.Screen name="day" options={{ title: 'Min dag' }} />

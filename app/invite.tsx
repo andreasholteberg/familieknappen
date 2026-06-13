@@ -100,7 +100,13 @@ export default function Invite() {
           variant="primary"
           compact
           onPress={() =>
-            router.replace(acceptedRole && acceptedRole !== 'senior' ? '/relative/welcome' : '/')
+            router.replace(
+              acceptedRole === 'senior'
+                ? '/senior/welcome'
+                : acceptedRole
+                  ? '/relative/welcome'
+                  : '/',
+            )
           }
         />
       </SafeAreaView>

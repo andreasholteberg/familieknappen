@@ -134,7 +134,7 @@ interface AppState {
   acceptInvite: (token: string) => Promise<{ familyGroupId: string; role: InvitedRole }>;
   createInvite: (input: { email: string; role: 'senior' | 'secondary_contact' }) => Promise<GroupInvitation>;
   createPairingCode: (role: 'senior' | 'secondary_contact') => Promise<svc.pairing.PairingCode>;
-  pairWithCode: (code: string) => Promise<void>;
+  pairWithCode: (code: string) => Promise<InvitedRole>;
   loadInvitations: () => Promise<void>;
   revokeInvite: (id: string) => Promise<void>;
 
@@ -144,6 +144,7 @@ interface AppState {
   markRequestViewed: (requestId: string) => void;
   respondToRequest: (input: RespondInput) => Promise<void>;
   markAnswerSeen: (requestId: string) => void;
+  undoAnswerSeen: (requestId: string) => void;
   closeRequest: (requestId: string) => void;
   addEvent: (event: Omit<CalendarEvent, 'id' | 'createdAt'>) => Promise<void>;
   updateEvent: (id: string, patch: Partial<CalendarEvent>) => Promise<void>;
@@ -360,6 +361,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const res = await svc.pairing.pairWithCode(code);
     set({ groupId: res.familyGroupId });
     await get().refresh();
+    return res.role;
   },
 
   loadInvitations: async () => {
@@ -462,6 +464,21 @@ export const useAppStore = create<AppState>((set, get) => ({
         await svc.helpRequests.markAnswerSeen(requestId);
       } catch (err) {
         logError('markAnswerSeen', err);
+      }
+    })();
+  },
+
+  undoAnswerSeen: (requestId) => {
+    set((s) => ({
+      requests: s.requests.map((r) =>
+        r.id === requestId ? { ...r, seenBySenior: false, acknowledgedAt: undefined } : r,
+      ),
+    }));
+    void (async () => {
+      try {
+        await svc.helpRequests.markAnswerUnseen(requestId);
+      } catch (err) {
+        logError('undoAnswerSeen', err);
       }
     })();
   },

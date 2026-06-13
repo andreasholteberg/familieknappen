@@ -13,6 +13,36 @@ import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 
+/**
+ * Vis varsler også når appen er i forgrunnen (F-058 / gammelt funn F10).
+ * Kalles én gang fra rot-layout.
+ */
+export function configureForegroundNotifications(): void {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+}
+
+/** Oversett varsel-data til en rute i appen (deep-link fra varsel). */
+export function routeForNotificationData(data: Record<string, unknown> | undefined): string | null {
+  const type = typeof data?.type === 'string' ? data.type : null;
+  const requestId = typeof data?.helpRequestId === 'string' ? data.helpRequestId : null;
+  if ((type === 'help_request' || type === 'escalation') && requestId) {
+    return `/relative/request/${requestId}`;
+  }
+  if (type === 'help_response' && requestId) {
+    return `/senior/answer?id=${requestId}`;
+  }
+  if (type === 'call_alert') return '/';
+  return null;
+}
+
 function getProjectId(): string | undefined {
   const fromExpo = (Constants.expoConfig as { extra?: { eas?: { projectId?: string } } } | null)?.extra?.eas
     ?.projectId;
@@ -35,8 +65,9 @@ export async function registerForPushNotifications(userId: string): Promise<stri
 
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
-        name: 'Standard',
-        importance: Notifications.AndroidImportance.DEFAULT,
+        name: 'Familieknappen',
+        importance: Notifications.AndroidImportance.HIGH,
+        sound: 'default',
       });
     }
 

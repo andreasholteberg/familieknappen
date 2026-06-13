@@ -38,8 +38,8 @@ export default function Onboarding() {
     setPairing(true);
     setPairError(null);
     try {
-      await pairWithCode(clean);
-      router.replace('/');
+      const role = await pairWithCode(clean);
+      router.replace(role === 'senior' ? '/senior/welcome' : '/relative/welcome');
     } catch (e) {
       setPairError((e as Error)?.message ?? 'Koden virket ikke. Prøv igjen.');
     } finally {

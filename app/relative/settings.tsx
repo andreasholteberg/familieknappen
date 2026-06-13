@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -11,6 +12,9 @@ import { colors, fontSize, radius, spacing } from '@/theme/theme';
 import type { GroupInvitation } from '@/types/models';
 import { createAppUrl } from '@/utils/appLinks';
 import { normalizePhone } from '@/utils/phone';
+
+// Supportkontakt i pilot. Bytt til egen support-adresse når den finnes (F-064).
+const SUPPORT_EMAIL = 'andreasholteberg@gmail.com';
 
 const SCOPE_LABEL: Record<string, string> = {
   help_requests: 'Forespørsler',
@@ -443,6 +447,25 @@ export default function RelativeSettings() {
           ikke som en fasit. Er dere i tvil, ta kontakt med banken, Posten eller politiet direkte.
         </Text>
       </View>
+
+      {/* Hjelp (F-064) */}
+      <Text style={styles.sectionLabel}>HJELP</Text>
+      <Card>
+        <Text style={styles.inviteHelp}>
+          Står du fast, eller virker noe rart? Send oss en e-post, så hjelper vi deg.
+        </Text>
+        <Pressable
+          style={styles.inviteBtn}
+          accessibilityRole="button"
+          onPress={() =>
+            void Linking.openURL(
+              `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Hjelp med Familieknappen')}&body=${encodeURIComponent(`\n\n—\nApp-versjon: ${Constants.expoConfig?.version ?? 'ukjent'}`)}`,
+            ).catch(() => undefined)
+          }
+        >
+          <Text style={styles.inviteBtnText}>✉️ Kontakt oss</Text>
+        </Pressable>
+      </Card>
 
       {/* Konto (F-036) */}
       <Text style={styles.sectionLabel}>KONTO</Text>

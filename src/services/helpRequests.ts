@@ -69,6 +69,15 @@ export async function markAnswerSeen(id: string): Promise<void> {
   if (error) throw error;
 }
 
+/** Angre «Jeg har sett svaret» (F-066): banneret kommer tilbake. */
+export async function markAnswerUnseen(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('help_requests')
+    .update({ seen_by_senior: false, acknowledged_at: null })
+    .eq('id', id);
+  if (error) throw error;
+}
+
 export async function closeRequest(id: string): Promise<void> {
   const { error } = await supabase
     .from('help_requests')

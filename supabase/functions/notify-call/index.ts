@@ -99,17 +99,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
       });
       const json = await res.json();
       const tickets = Array.isArray(json?.data) ? json.data : [];
+      const deadTokens: string[] = [];
       tokenRows.forEach((t, i) => {
-        const ok = tickets[i]?.status === 'ok';
+        const ticket = tickets[i];
+        const ok = ticket?.status === 'ok';
         if (ok) notified++;
+        if (!ok && ticket?.details?.error === 'DeviceNotRegistered') deadTokens.push(t.expo_push_token);
         logs.push({
           user_id: t.user_id,
           type: 'call_alert',
           related_help_request_id: null,
           status: ok ? 'sent' : 'error',
-          error_message: ok ? null : (tickets[i]?.message ?? 'ukjent feil'),
+          error_message: ok ? null : (ticket?.message ?? 'ukjent feil'),
         });
       });
+      if (deadTokens.length > 0) {
+        await admin.from('notification_tokens').delete().in('expo_push_token', deadTokens);
+      }
       await admin.from('notification_tokens').update({ last_used_at: nowIso }).in('user_id', targetIds);
     } catch (e) {
       for (const t of tokenRows) {

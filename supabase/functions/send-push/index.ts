@@ -131,9 +131,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
       });
       const json = await res.json();
       const tickets = Array.isArray(json?.data) ? json.data : [];
+      const deadTokens: string[] = [];
       tokenRows.forEach((t, i) => {
         const ticket = tickets[i];
         const ok = ticket?.status === 'ok';
+        if (!ok && ticket?.details?.error === 'DeviceNotRegistered') deadTokens.push(t.expo_push_token);
         logs.push({
           user_id: t.user_id,
           type: logType,
@@ -142,6 +144,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
           error_message: ok ? null : (ticket?.message ?? 'ukjent feil'),
         });
       });
+      // Rydd tokens for avregistrerte enheter (F-058).
+      if (deadTokens.length > 0) {
+        await admin.from('notification_tokens').delete().in('expo_push_token', deadTokens);
+      }
       await admin
         .from('notification_tokens')
         .update({ last_used_at: new Date().toISOString() })
