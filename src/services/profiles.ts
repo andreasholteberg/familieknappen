@@ -59,3 +59,9 @@ export async function acceptLegal(
     .eq('id', userId);
   if (error) throw error;
 }
+
+/** Oppdater eget visningsnavn (GDPR art. 16 – retting; RLS: kun egen profil). */
+export async function setName(userId: string, name: string): Promise<void> {
+  const { error } = await supabase.from('profiles').update({ name }).eq('id', userId);
+  if (error) throw error;
+}

@@ -84,6 +84,28 @@ export default function RelativeSettings() {
   const activitySharing = currentUser?.activitySharingEnabled ?? false;
 
   const setMyPhone = useAppStore((s) => s.setMyPhone);
+  const setMyName = useAppStore((s) => s.setMyName);
+  const [nameInput, setNameInput] = useState(currentUser?.name ?? '');
+  const [nameStatus, setNameStatus] = useState<string | null>(null);
+  const [savingName, setSavingName] = useState(false);
+
+  const saveName = async () => {
+    if (savingName) return;
+    if (!nameInput.trim()) {
+      setNameStatus('Skriv et navn.');
+      return;
+    }
+    setSavingName(true);
+    setNameStatus(null);
+    try {
+      await setMyName(nameInput);
+      setNameStatus('Lagret ✓');
+    } catch {
+      setNameStatus('Fikk ikke lagret navnet. Prøv igjen.');
+    } finally {
+      setSavingName(false);
+    }
+  };
   const requestDeletion = useAppStore((s) => s.requestAccountDeletion);
   const cancelDeletion = useAppStore((s) => s.cancelAccountDeletion);
   const [deletionBusy, setDeletionBusy] = useState(false);
@@ -356,6 +378,29 @@ export default function RelativeSettings() {
           </Card>
         </>
       ) : null}
+
+      {/* Mitt navn (GDPR art. 16 – retting) */}
+      <Text style={styles.sectionLabel}>MITT NAVN</Text>
+      <Card>
+        <Text style={styles.inviteHelp}>Slik familien ser deg i appen.</Text>
+        <TextInput
+          style={styles.inviteInput}
+          value={nameInput}
+          onChangeText={setNameInput}
+          placeholder="F.eks. Anne"
+          placeholderTextColor={colors.inkFaint}
+          autoComplete="name"
+          accessibilityLabel="Mitt navn"
+        />
+        {nameStatus ? <Text style={styles.phoneStatus}>{nameStatus}</Text> : null}
+        <Pressable
+          style={[styles.inviteBtn, savingName && styles.inviteBtnDisabled]}
+          disabled={savingName}
+          onPress={() => void saveName()}
+        >
+          <Text style={styles.inviteBtnText}>{savingName ? 'Lagrer …' : 'Lagre navn'}</Text>
+        </Pressable>
+      </Card>
 
       {/* Mitt telefonnummer */}
       <Text style={styles.sectionLabel}>MITT TELEFONNUMMER</Text>

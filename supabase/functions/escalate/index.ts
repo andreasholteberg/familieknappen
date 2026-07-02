@@ -83,10 +83,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
       continue;
     }
 
-    const { data: senior } = await admin.from('profiles').select('name').eq('id', r.senior_id).maybeSingle();
-    const seniorName = (senior?.name as string) || 'Et familiemedlem';
-    const title = `${seniorName} venter fortsatt på svar`;
-    const body = `${seniorName} ba om hjelp og har ikke fått svar ennå. Kan du se på det?`;
+    // Dataminimert låseskjermtekst (ingen navn) – som i send-push/notify-call.
+    const title = 'Familieknappen';
+    const body = 'Noen i familien venter fortsatt på svar. Åpne appen for å se.';
 
     const { data: tokens } = await admin
       .from('notification_tokens')

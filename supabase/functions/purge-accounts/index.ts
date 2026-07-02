@@ -85,6 +85,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
     else deleted++;
   }
 
+  // Rydd familiegrupper som står igjen uten medlemmer (gruppenavn kan være
+  // persondata, f.eks. «Familien Holteberg») – art. 17-hygiene.
+  const { data: emptyGroups } = await admin
+    .from('family_groups')
+    .select('id, family_members(id)')
+    .is('family_members.id', null);
+  const emptyIds = ((emptyGroups ?? []) as { id: string; family_members: unknown[] }[])
+    .filter((g) => !g.family_members || g.family_members.length === 0)
+    .map((g) => g.id);
+  if (emptyIds.length > 0) {
+    await admin.from('family_groups').delete().in('id', emptyIds);
+  }
+
   // Generell datahygiene i samme kjøring.
   const { data: purged } = await admin.rpc('purge_old_records');
 

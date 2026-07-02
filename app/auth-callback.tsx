@@ -76,7 +76,7 @@ export default function AuthCallback() {
         if (__DEV__) {
           // Logg bare feilmelding, aldri tokens eller full callback-URL.
           // eslint-disable-next-line no-console
-          console.warn('[Familieknappen] Auth callback feilet:', (err as Error)?.message);
+          if (__DEV__) console.warn('[Familieknappen] Auth callback feilet:', (err as Error)?.message);
         }
         useAppStore.setState({ status: 'signedOut', session: null, currentUserId: null });
         setError(humanizeAuthError(err, 'Kunne ikke fullføre innloggingen. Prøv å be om en ny lenke.'));

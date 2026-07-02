@@ -152,6 +152,7 @@ interface AppState {
   updateEvent: (id: string, patch: Partial<CalendarEvent>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   setMyPhone: (phone: string | null) => Promise<void>;
+  setMyName: (name: string) => Promise<void>;
   addPhoto: (input: { localUri: string; caption?: string }) => Promise<void>;
   deletePhoto: (photo: FamilyPhoto) => Promise<void>;
   acceptLegal: () => Promise<void>;
@@ -591,6 +592,17 @@ export const useAppStore = create<AppState>((set, get) => ({
           ? { ...u, termsVersion: LEGAL_VERSIONS.terms, privacyVersion: LEGAL_VERSIONS.privacy }
           : u,
       ),
+    }));
+  },
+
+  setMyName: async (name) => {
+    const uid = get().currentUserId;
+    if (!uid) throw new Error('Ikke innlogget');
+    const trimmed = name.trim();
+    if (!trimmed) throw new Error('Navnet kan ikke være tomt');
+    await svc.profiles.setName(uid, trimmed);
+    set((s) => ({
+      users: s.users.map((u) => (u.id === uid ? { ...u, name: trimmed } : u)),
     }));
   },
 
