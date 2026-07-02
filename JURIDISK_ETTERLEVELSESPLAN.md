@@ -6,6 +6,8 @@ ikke juridisk rådgivning. Det skal gjennomgås av advokat med personvern som
 spesialfelt før betalt pilot (jf. fullføringsplanen § 8.3). Punkter advokaten
 særlig må ta stilling til er merket **[ADVOKAT]**.
 
+**Distribusjonspakke 2026-07-02:** Operative GDPR-dokumenter for ekstern beta og senere betalt pilot ligger i docs/legal/: distribusjonssjekkliste, ROPA, DPIA-utkast, DPA-register, avviksrutine, rettighetsrutine, samtykkekompetanse, sletting/tredjepartsdata, leverandørdashboard-sjekkliste, advokatspørsmål og distribusjonsrapport. Disse dokumentene er arbeidsgrunnlag før advokatgjennomgang, ikke juridisk godkjenning.
+
 ---
 
 ## 1. Faktum: hva tjenesten gjør
@@ -166,3 +168,4 @@ Hovedrisikoen er ikke teknisk, men (i) samtykkekompetanse i målgruppen,
 (ii) manglende formalisering (DPA-arkiv, DPIA, beredskap) og (iii) at
 fremtidige funksjoner (bevegelse, bilder av tredjepersoner/barnebarn) har
 vesentlig høyere terskel enn dagens. Ingen av delene blokkerer mor-piloten.
+
