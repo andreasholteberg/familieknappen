@@ -1,13 +1,15 @@
 /**
- * Bildevalg via expo-image-picker, med trygg fallback og nedskalering.
+ * Bildevalg via expo-image-picker, med trygg fallback og metadata-fjerning.
  *
  * Senior skal kunne ta bilde (kamera) eller velge et eksisterende bilde. Hvis
  * kameraet ikke er tilgjengelig eller tillatelse avslås, returnerer vi `null`,
  * og UI-et viser en placeholder i stedet for å blokkere flyten.
  *
- * Lagringsoptimalisering: bilder nedskaleres til maks 1280 px bredde før
- * opplasting (~150–300 KB i stedet for 1–3 MB). Feiler nedskaleringen,
- * brukes originalbildet – flyten skal aldri stoppe på grunn av dette.
+ * PERSONVERN: Alle bilder RE-ENKODES til JPEG via expo-image-manipulator før de
+ * brukes/lastes opp. Re-enkoding produserer en NY fil uten EXIF/metadata
+ * (inkl. GPS og kamerainfo), også når bildet ikke nedskaleres. Original-URI
+ * lastes ALDRI opp direkte. Klarer vi ikke re-enkode, returnerer vi `null` i
+ * stedet for å laste opp originalen. Nedskalering skjer kun hvis bredde > 1280 px.
  */
 
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -16,17 +18,24 @@ import * as ImagePicker from 'expo-image-picker';
 const MAX_WIDTH = 1280;
 const COMPRESS = 0.6;
 
-async function downscale(asset: ImagePicker.ImagePickerAsset): Promise<string> {
+/**
+ * Re-enkoder bildet til JPEG (fjerner EXIF/metadata) og nedskalerer ved behov.
+ * Returnerer URI til den nye, metadata-frie fila – eller `null` ved feil, slik
+ * at originalen aldri lastes opp.
+ */
+async function reencodeStripMetadata(asset: ImagePicker.ImagePickerAsset): Promise<string | null> {
+  const actions =
+    asset.width && asset.width > MAX_WIDTH ? [{ resize: { width: MAX_WIDTH } }] : [];
   try {
-    if (!asset.width || asset.width <= MAX_WIDTH) return asset.uri;
-    const result = await ImageManipulator.manipulateAsync(
-      asset.uri,
-      [{ resize: { width: MAX_WIDTH } }],
-      { compress: COMPRESS, format: ImageManipulator.SaveFormat.JPEG },
-    );
-    return result.uri || asset.uri;
+    const result = await ImageManipulator.manipulateAsync(asset.uri, actions, {
+      compress: COMPRESS,
+      format: ImageManipulator.SaveFormat.JPEG,
+    });
+    // result.uri er en ny fil uten EXIF. Faller ALDRI tilbake til asset.uri.
+    return result.uri || null;
   } catch {
-    return asset.uri;
+    // Klarte ikke re-enkode → ikke last opp originalen (kan inneholde EXIF/GPS).
+    return null;
   }
 }
 
@@ -36,7 +45,7 @@ export async function takePhoto(): Promise<string | null> {
     if (!perm.granted) return null;
     const result = await ImagePicker.launchCameraAsync({ quality: 0.6 });
     if (result.canceled || result.assets.length === 0) return null;
-    return downscale(result.assets[0]);
+    return reencodeStripMetadata(result.assets[0]);
   } catch {
     return null;
   }
@@ -49,7 +58,7 @@ export async function pickFromLibrary(): Promise<string | null> {
       quality: 0.6,
     });
     if (result.canceled || result.assets.length === 0) return null;
-    return downscale(result.assets[0]);
+    return reencodeStripMetadata(result.assets[0]);
   } catch {
     return null;
   }

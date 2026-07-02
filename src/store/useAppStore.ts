@@ -275,10 +275,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       const senior = ctx.users.find((u) => u.role === 'senior');
       const seniorId = senior?.id ?? userId;
 
-      const [requests, events, activity, photos] = await Promise.all([
+      const [requests, events, usedToday, photos] = await Promise.all([
         svc.helpRequests.listRequests(groupId),
         svc.calendar.listEvents(groupId, seniorId),
-        svc.activity.getActivity(seniorId),
+        svc.activity.getUsedToday(seniorId),
         svc.photos.listPhotos(groupId).catch(() => [] as FamilyPhoto[]),
       ]);
       const responses = await svc.helpResponses.listResponses(requests.map((r) => r.id));
@@ -297,7 +297,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         responses,
         events,
         photos,
-        activity: activity ?? { ...EMPTY_ACTIVITY, seniorId },
+        activity: { ...EMPTY_ACTIVITY, seniorId, usedToday },
         consents: deriveConsents(ctx.members, ctx.users),
         settings: { ...s.settings, primaryContactUserId: primary?.userId ?? '' },
       }));
@@ -401,7 +401,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         const senior = get().users.find((u) => u.role === 'senior');
         if (senior && senior.id === userId) {
           set((s) => ({
-            activity: { ...s.activity, seniorId: userId, lastSeenAt: nowISO(), lastAppOpenedAt: nowISO(), updatedAt: nowISO() },
+            activity: { ...s.activity, seniorId: userId, usedToday: true, lastSeenAt: nowISO(), lastAppOpenedAt: nowISO(), updatedAt: nowISO() },
           }));
         }
       } catch (err) {

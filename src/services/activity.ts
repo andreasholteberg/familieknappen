@@ -1,17 +1,17 @@
-/** Nøktern trygghetsstatus («sist aktiv»). Ingen GPS, ingen alarmer. */
+/** Nøktern trygghetsstatus. Ingen GPS, ingen alarmer, ingen presist tidspunkt. */
 
 import { supabase } from '@/lib/supabase';
-import { toActivityStatus } from '@/services/mappers';
-import type { ActivityStatus } from '@/types/models';
 
-export async function getActivity(userId: string): Promise<ActivityStatus | null> {
-  const { data, error } = await supabase
-    .from('activity_status')
-    .select('*')
-    .eq('user_id', userId)
-    .maybeSingle();
+/**
+ * «Brukt i dag» – avledet BOOLSK verdi (Standard). Presist `last_seen_at` holdes
+ * internt server-side og eksponeres ikke til gruppemedlemmer (jf. migrasjon
+ * 20260618100000: RLS gir bare lesing av egen rad; gruppemedlemmer bruker denne
+ * RPC-en, som returnerer kun true/false og respekterer seniorens samtykke).
+ */
+export async function getUsedToday(userId: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('activity_used_today', { p_user: userId });
   if (error) throw error;
-  return data ? toActivityStatus(data) : null;
+  return data === true;
 }
 
 /** Oppdater «sist sett» for innlogget bruker (kalt ved appåpning/fokus). */

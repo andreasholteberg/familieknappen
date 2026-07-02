@@ -14,6 +14,8 @@ interface BigButtonProps {
   style?: ViewStyle;
   /** Mindre variant (brukt på sekundære «Tilbake/Ferdig»-knapper). */
   compact?: boolean;
+  /** Større «hero»-variant for den ene hovedhandlingen på en skjerm. */
+  size?: 'normal' | 'hero';
 }
 
 const VARIANT_BG: Record<Variant, string> = {
@@ -35,7 +37,9 @@ export function BigButton({
   onPress,
   style,
   compact = false,
+  size = 'normal',
 }: BigButtonProps) {
+  const hero = size === 'hero';
   return (
     <Pressable
       accessibilityRole="button"
@@ -45,13 +49,14 @@ export function BigButton({
         styles.btn,
         { backgroundColor: VARIANT_BG[variant] },
         compact && styles.compact,
+        hero && styles.hero,
         shadow.card,
         pressed && styles.pressed,
         style,
       ]}
     >
-      {icon ? <Text style={[styles.icon, compact && styles.iconCompact]}>{icon}</Text> : null}
-      <Text style={[styles.label, compact && styles.labelCompact]}>{label}</Text>
+      {icon ? <Text style={[styles.icon, compact && styles.iconCompact, hero && styles.iconHero]}>{icon}</Text> : null}
+      <Text style={[styles.label, compact && styles.labelCompact, hero && styles.labelHero]}>{label}</Text>
       {hint ? <Text style={styles.hint}>{hint}</Text> : null}
     </Pressable>
   );
@@ -69,9 +74,13 @@ const styles = StyleSheet.create({
   compact: {
     paddingVertical: spacing(5),
   },
+  hero: {
+    paddingVertical: spacing(9),
+  },
   pressed: { opacity: 0.92, transform: [{ scale: 0.99 }] },
   icon: { fontSize: 40, marginBottom: spacing(2) },
   iconCompact: { fontSize: 28, marginBottom: spacing(1) },
+  iconHero: { fontSize: 52 },
   label: {
     color: colors.white,
     fontFamily: fontFamily.heavy,
@@ -80,6 +89,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   labelCompact: { fontSize: fontSize.body },
+  labelHero: { fontSize: fontSize.huge },
   hint: {
     color: colors.white,
     opacity: 0.92,

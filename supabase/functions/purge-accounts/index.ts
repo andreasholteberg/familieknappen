@@ -55,6 +55,30 @@ Deno.serve(async (req: Request): Promise<Response> => {
       }
     }
 
+    // Slett hjelpebilder (help-images) for denne brukerens forespørsler, slik at
+    // ingen bildefiler blir foreldreløse når help_requests slettes av FK-kaskaden.
+    const { data: reqs, error: reqError } = await admin
+      .from('help_requests')
+      .select('image_path')
+      .eq('senior_id', row.id)
+      .not('image_path', 'is', null);
+    if (reqError) {
+      errors.push(`${row.id}: ${reqError.message}`);
+      continue;
+    }
+    const helpPaths = ((reqs ?? []) as { image_path: string | null }[])
+      .map((r) => r.image_path)
+      .filter((path): path is string => Boolean(path));
+    if (helpPaths.length > 0) {
+      const { error: helpStorageError } = await admin.storage.from('help-images').remove(helpPaths);
+      if (helpStorageError) {
+        errors.push(`${row.id}: ${helpStorageError.message}`);
+        continue;
+      }
+    }
+    // TODO (MÅ AVKLARES): eldre foreldreløse help-images fra FØR denne fiksen
+    // ryddes ikke automatisk her. Kjør en egen, verifisert dry-run/opprydding.
+
     // Sletter auth-brukeren; FK-kaskaden fjerner profil og brukerdata.
     const { error: delError } = await admin.auth.admin.deleteUser(row.id);
     if (delError) errors.push(`${row.id}: ${delError.message}`);

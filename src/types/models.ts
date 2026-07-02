@@ -129,6 +129,11 @@ export interface ActivityStatus {
   lastSeenAt: string;
   lastAppOpenedAt: string;
   updatedAt: string;
+  /**
+   * Standard: avledet «brukt i dag» (boolsk) fra `activity_used_today`-RPC.
+   * Erstatter eksponering av presist `last_seen_at` til gruppemedlemmer.
+   */
+  usedToday?: boolean;
 }
 
 /** Et delt familiebilde (F-063). */

@@ -81,7 +81,7 @@ export default function RelativeSettings() {
 
   const myMember = members.find((m) => m.userId === currentUserId);
   const iAmPrimary = !!myMember?.isPrimaryContact;
-  const activitySharing = currentUser?.activitySharingEnabled ?? true;
+  const activitySharing = currentUser?.activitySharingEnabled ?? false;
 
   const setMyPhone = useAppStore((s) => s.setMyPhone);
   const requestDeletion = useAppStore((s) => s.requestAccountDeletion);
@@ -414,7 +414,7 @@ export default function RelativeSettings() {
         <Text style={styles.privacyLine}>• Appen bruker ikke GPS eller stedssporing.</Text>
         <Text style={styles.privacyLine}>• Push-varsler brukes bare for forespørsler og svar.</Text>
         <Text style={styles.privacyLine}>
-          • Aktivitetsstatus («sist aktiv») deles bare hvis du har samtykket.
+          • At noen har brukt appen i dag deles bare hvis de har sagt ja.
         </Text>
         <Text style={styles.privacyLine}>
           • Du kan når som helst be om at kontoen og dataene dine slettes.
@@ -428,11 +428,11 @@ export default function RelativeSettings() {
         </Pressable>
 
         <View style={[styles.settingRow, styles.privacyToggleRow]}>
-          <Text style={styles.settingLabel}>Del min aktivitetsstatus med familien</Text>
+          <Text style={styles.settingLabel}>Del at jeg har brukt appen i dag</Text>
           <Toggle
             on={activitySharing}
             onPress={() => setActivitySharing(!activitySharing)}
-            label="Del aktivitetsstatus"
+            label="Del at jeg har brukt appen i dag"
           />
         </View>
       </Card>

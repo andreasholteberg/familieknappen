@@ -8,6 +8,7 @@ import { Card } from '@/components/Card';
 import { RelativeTabs } from '@/components/RelativeTabs';
 import { Screen } from '@/components/Screen';
 import { StatusBadge } from '@/components/StatusBadge';
+import { hasFeature } from '@/config/features';
 import {
   selectOpenRequests,
   selectSenior,
@@ -30,20 +31,26 @@ export default function RelativeDashboard() {
   const requests = useAppStore((s) => s.requests);
   const open = useAppStore(useShallow(selectOpenRequests));
   const events = useAppStore(useShallow(selectTodaysEvents));
+  const group = useAppStore((s) => s.group);
 
   const recent = requests.slice(0, 6);
 
-  // Rolig status-stripe (F-045): observasjoner, aldri konklusjoner.
   const answeredToday = requests.filter((r) => r.answeredAt && isToday(r.answeredAt)).length;
-  const openedToday = isToday(activity.lastAppOpenedAt);
+
+  // Aktivitetsvisning: kun seniorens samtykke styrer dette, og standard viser
+  // bare nærvær («brukt i dag») – aldri fravær eller presist tidspunkt.
+  // «Brukt i dag» er en avledet boolsk verdi fra server (activity_used_today).
+  const sharing = senior?.activitySharingEnabled === true;
+  const showUsedToday =
+    sharing && hasFeature(group, 'appUsageIndicator') && activity.usedToday === true;
+
+  // Rolig status-stripe (F-045): observasjoner, aldri konklusjoner eller fravær.
   const statusLine =
     open.length > 0
       ? `${senior?.name ?? 'Senior'} venter på svar nå.`
       : answeredToday > 0
-        ? `${senior?.name ?? 'Senior'} har fått hjelp i dag. Alt ser rolig ut.`
-        : openedToday
-          ? 'Alt ser rolig ut i dag.'
-          : 'Ingen aktivitet registrert i dag.';
+        ? `${senior?.name ?? 'Senior'} har fått hjelp i dag.`
+        : 'Alt er rolig.';
 
   return (
     <Screen>
@@ -58,10 +65,9 @@ export default function RelativeDashboard() {
         <Avatar name={senior?.name ?? '?'} size={54} onDark />
         <View style={styles.bannerBody}>
           <Text style={styles.bannerName}>{senior?.name}</Text>
-          <Text style={styles.bannerSeen}>
-            Sist aktiv {timeAgo(activity.lastSeenAt)}
-            {openedToday ? ' · Åpnet appen i dag ✓' : ''}
-          </Text>
+          {showUsedToday ? (
+            <Text style={styles.bannerSeen}>Har brukt Familieknappen i dag ✓</Text>
+          ) : null}
         </View>
       </View>
 

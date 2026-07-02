@@ -45,9 +45,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
   const groupId = (membership as { group_id: string }).group_id;
 
-  const { data: caller } = await admin.from('profiles').select('name').eq('id', callerId).maybeSingle();
-  const callerName = (caller?.name as string) || 'Et familiemedlem';
-
   const { data: members } = await admin
     .from('family_members')
     .select('user_id, member_role')
@@ -87,8 +84,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const messages = tokenRows.map((t) => ({
       to: t.expo_push_token,
       sound: 'default',
-      title: `${callerName} prøver å nå deg`,
-      body: `${callerName} ringer familien nå. Kan du ta telefonen?`,
+      title: 'Familieknappen',
+      body: 'Noen i familien prøver å nå deg nå. Åpne appen.',
       data: { type: 'call_alert' },
     }));
     try {

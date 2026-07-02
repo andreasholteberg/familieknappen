@@ -17,7 +17,7 @@ const POINTS = [
   'Bildene og meldingene du sender, ser familien din.',
   'Appen vet ikke hvor du er. Vi bruker ikke GPS eller stedssporing.',
   'Familien får et varsel når du spør om hjelp, og når de svarer deg.',
-  'Familien ser at du har vært aktiv bare hvis du sier ja nedenfor.',
+  'Familien ser at du har brukt appen i dag bare hvis du sier ja nedenfor.',
   'Du kan be om at kontoen og dataene dine slettes når som helst.',
 ];
 
@@ -27,7 +27,7 @@ export default function SeniorPrivacy() {
   const setActivitySharing = useAppStore((s) => s.setActivitySharing);
   const requestDeletion = useAppStore((s) => s.requestAccountDeletion);
   const cancelDeletion = useAppStore((s) => s.cancelAccountDeletion);
-  const sharing = currentUser?.activitySharingEnabled ?? true;
+  const sharing = currentUser?.activitySharingEnabled ?? false;
   const [busy, setBusy] = useState(false);
 
   const confirmDeletion = () => {
@@ -65,11 +65,11 @@ export default function SeniorPrivacy() {
       ))}
 
       <View style={[styles.card, shadow.card]}>
-        <Text style={styles.toggleLabel}>Skal familien få se at du har vært aktiv?</Text>
+        <Text style={styles.toggleLabel}>Skal familien få se at du har brukt appen i dag?</Text>
         <View style={styles.choices}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Ja, del aktivitetsstatus"
+            accessibilityLabel="Ja, del at jeg har brukt appen i dag"
             accessibilityState={{ selected: sharing }}
             style={[styles.choice, sharing && styles.choiceYes]}
             onPress={() => setActivitySharing(true)}
@@ -78,7 +78,7 @@ export default function SeniorPrivacy() {
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Nei, ikke del aktivitetsstatus"
+            accessibilityLabel="Nei, ikke del"
             accessibilityState={{ selected: !sharing }}
             style={[styles.choice, !sharing && styles.choiceNo]}
             onPress={() => setActivitySharing(false)}
@@ -88,8 +88,8 @@ export default function SeniorPrivacy() {
         </View>
         <Text style={styles.toggleHint}>
           {sharing
-            ? 'Familien ser at du har vært aktiv i dag.'
-            : 'Familien ser ikke aktiviteten din.'}
+            ? 'Familien ser at du har brukt appen i dag.'
+            : 'Familien ser ikke om du har brukt appen.'}
         </Text>
       </View>
 

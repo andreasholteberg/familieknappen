@@ -362,6 +362,7 @@ export type Database = {
       is_group_member: { Args: { g: string }; Returns: boolean };
       shares_group_with: { Args: { other: string }; Returns: boolean };
       request_group: { Args: { req: string }; Returns: string };
+      activity_used_today: { Args: { p_user: string }; Returns: boolean };
       is_primary_contact: { Args: { g: string }; Returns: boolean };
       transfer_primary_contact: { Args: { p_group: string; p_new_user: string }; Returns: undefined };
       accept_group_invitation: { Args: { p_token: string }; Returns: Json };

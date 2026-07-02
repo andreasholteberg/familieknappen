@@ -59,18 +59,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const seniorId = record.senior_id as string;
     const groupId = record.family_group_id as string;
 
-    const { data: senior } = await admin
-      .from('profiles').select('name').eq('id', seniorId).maybeSingle();
-    const seniorName = (senior?.name as string) || 'Et familiemedlem';
-
     const { data: members } = await admin
       .from('family_members').select('user_id').eq('group_id', groupId);
     recipientIds = (members ?? [])
       .map((m: { user_id: string }) => m.user_id)
       .filter((id: string) => id !== seniorId);
 
-    title = `${seniorName} ber om hjelp`;
-    body = `${seniorName} venter på svar fra familien.`;
+    // Nøytral tekst: ingen navn eller sensitiv kontekst på låseskjerm.
+    title = 'Familieknappen';
+    body = 'Du har en ny oppdatering. Åpne appen for å se.';
   } else if (payload.table === 'help_responses') {
     logType = 'help_response';
     relatedHelpRequestId = record.help_request_id as string;
@@ -80,13 +77,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .from('help_requests').select('senior_id').eq('id', relatedHelpRequestId).maybeSingle();
     if (!hr) return new Response('Fant ikke forespørsel', { status: 200 });
 
-    const { data: responder } = await admin
-      .from('profiles').select('name').eq('id', responderId).maybeSingle();
-    const responderName = (responder?.name as string) || 'Familien';
-
     recipientIds = [hr.senior_id as string].filter((id) => id && id !== responderId);
-    title = 'Svar fra familien';
-    body = `${responderName} har svart deg.`;
+    // Nøytral tekst: ingen navn eller sensitiv kontekst på låseskjerm.
+    title = 'Familieknappen';
+    body = 'Du har fått en melding i Familieknappen. Åpne appen for å se.';
   } else {
     return new Response('Ignorert', { status: 200 });
   }
