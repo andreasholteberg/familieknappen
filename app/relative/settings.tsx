@@ -12,6 +12,7 @@ import { colors, fontSize, radius, spacing } from '@/theme/theme';
 import type { GroupInvitation } from '@/types/models';
 import { createAppUrl } from '@/utils/appLinks';
 import { normalizePhone } from '@/utils/phone';
+import { normalizeVideoUrl } from '@/utils/video';
 
 // Supportkontakt i pilot. Bytt til egen support-adresse når den finnes (F-064).
 const SUPPORT_EMAIL = 'andreasholteberg@gmail.com';
@@ -39,6 +40,41 @@ const fmtDate = (iso: string): string => {
   const d = new Date(iso);
   return `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
 };
+
+type VideoServiceId = 'facetime' | 'meet' | 'whereby' | 'jitsi' | 'other';
+
+const VIDEO_SERVICES: { id: VideoServiceId; label: string; placeholder: string; hint: string }[] = [
+  {
+    id: 'facetime',
+    label: 'FaceTime',
+    placeholder: 'https://facetime.apple.com/join#v=1&...',
+    hint: 'FaceTime → «Opprett lenke» → kopier lenken og lim den inn her.',
+  },
+  {
+    id: 'meet',
+    label: 'Google Meet',
+    placeholder: 'https://meet.google.com/abc-defg-hij',
+    hint: 'Start et møte i Google Meet og lim inn møtelenken.',
+  },
+  {
+    id: 'whereby',
+    label: 'Whereby',
+    placeholder: 'https://whereby.com/ditt-rom',
+    hint: 'Bruk din faste Whereby-romlenke.',
+  },
+  {
+    id: 'jitsi',
+    label: 'Jitsi',
+    placeholder: 'https://meet.jit.si/DittRom',
+    hint: 'Lag et rom på meet.jit.si og lim inn lenken.',
+  },
+  {
+    id: 'other',
+    label: 'Annen',
+    placeholder: 'https://…',
+    hint: 'Lim inn en lenke som starter videosamtalen din (må begynne med https).',
+  },
+];
 
 function Toggle({ on, onPress, label }: { on: boolean; onPress: () => void; label: string }) {
   return (
@@ -181,6 +217,33 @@ export default function RelativeSettings() {
       setPhoneStatus('Fikk ikke lagret nummeret. Prøv igjen.');
     } finally {
       setSavingPhone(false);
+    }
+  };
+
+  const setMyVideoCallUrl = useAppStore((s) => s.setMyVideoCallUrl);
+  const [videoService, setVideoService] = useState<VideoServiceId>('facetime');
+  const [videoInput, setVideoInput] = useState(currentUser?.videoCallUrl ?? '');
+  const [videoStatus, setVideoStatus] = useState<string | null>(null);
+  const [savingVideo, setSavingVideo] = useState(false);
+  const activeVideoService = VIDEO_SERVICES.find((s) => s.id === videoService) ?? VIDEO_SERVICES[0];
+
+  const saveVideo = async () => {
+    if (savingVideo) return;
+    const trimmed = videoInput.trim();
+    const normalized = normalizeVideoUrl(trimmed);
+    if (trimmed && !normalized) {
+      setVideoStatus('Lim inn en lenke som begynner med https://');
+      return;
+    }
+    setSavingVideo(true);
+    setVideoStatus(null);
+    try {
+      await setMyVideoCallUrl(normalized);
+      setVideoStatus(normalized ? 'Lagret ✓' : 'Lenken er fjernet.');
+    } catch {
+      setVideoStatus('Fikk ikke lagret lenken. Prøv igjen.');
+    } finally {
+      setSavingVideo(false);
     }
   };
 
@@ -429,6 +492,57 @@ export default function RelativeSettings() {
         </Pressable>
       </Card>
 
+      {/* Videosamtale (Nivå 2 – ekstern lenke) */}
+      <Text style={styles.sectionLabel}>VIDEOSAMTALE</Text>
+      <Card>
+        <Text style={styles.inviteHelp}>
+          Legg inn din faste videolenke, så kan {senior?.name ?? 'senior'} starte en videosamtale
+          med deg rett fra «Min familie».
+        </Text>
+        <View style={styles.videoServiceRow}>
+          {VIDEO_SERVICES.map((s) => {
+            const on = videoService === s.id;
+            return (
+              <Pressable
+                key={s.id}
+                accessibilityRole="button"
+                accessibilityState={{ selected: on }}
+                accessibilityLabel={s.label}
+                style={[styles.videoChip, on && styles.videoChipOn]}
+                onPress={() => setVideoService(s.id)}
+              >
+                <Text style={[styles.videoChipText, on && styles.videoChipTextOn]}>{s.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Text style={styles.videoHint}>{activeVideoService.hint}</Text>
+        <TextInput
+          style={styles.inviteInput}
+          value={videoInput}
+          onChangeText={setVideoInput}
+          placeholder={activeVideoService.placeholder}
+          placeholderTextColor={colors.inkFaint}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
+          inputMode="url"
+          accessibilityLabel="Min videolenke"
+        />
+        {videoStatus ? <Text style={styles.phoneStatus}>{videoStatus}</Text> : null}
+        <Pressable
+          style={[styles.inviteBtn, savingVideo && styles.inviteBtnDisabled]}
+          disabled={savingVideo}
+          onPress={() => void saveVideo()}
+        >
+          <Text style={styles.inviteBtnText}>{savingVideo ? 'Lagrer …' : 'Lagre videolenke'}</Text>
+        </Pressable>
+        <Text style={styles.videoPrivacyNote}>
+          Videosamtalen skjer i tjenesten du velger, utenfor Familieknappen. Del bare en lenke du er
+          trygg på.
+        </Text>
+      </Card>
+
       {/* Varsling */}
       <Text style={styles.sectionLabel}>VARSLING</Text>
       <Card>
@@ -642,6 +756,20 @@ const styles = StyleSheet.create({
   roleChipTextOn: { color: colors.brandDark },
   inviteError: { color: colors.attention, fontSize: fontSize.sm, marginTop: spacing(3) },
   phoneStatus: { color: colors.inkSoft, fontSize: fontSize.sm, marginTop: spacing(2.5) },
+  videoServiceRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing(2), marginBottom: spacing(3) },
+  videoChip: {
+    paddingVertical: spacing(2),
+    paddingHorizontal: spacing(3.5),
+    borderRadius: radius.m,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.surface,
+  },
+  videoChipOn: { borderColor: colors.brand, backgroundColor: colors.brandSoft },
+  videoChipText: { fontSize: fontSize.md, color: colors.inkSoft, fontWeight: '700' },
+  videoChipTextOn: { color: colors.brandDark },
+  videoHint: { fontSize: fontSize.sm, color: colors.inkFaint, marginBottom: spacing(3), lineHeight: 20 },
+  videoPrivacyNote: { fontSize: fontSize.sm, color: colors.inkFaint, marginTop: spacing(3), lineHeight: 20 },
   pairingBox: { marginTop: spacing(4), borderTopWidth: 1, borderTopColor: colors.line, paddingTop: spacing(3) },
   pairingResult: { alignItems: 'center', marginTop: spacing(3) },
   pairingCodeText: {

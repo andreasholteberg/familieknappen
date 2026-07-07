@@ -87,6 +87,7 @@ export function toUser(r: Tables<'profiles'>): User {
     name: r.name,
     role: r.role,
     phone: r.phone ?? undefined,
+    videoCallUrl: r.video_call_url ?? undefined,
     email: r.email ?? undefined,
     activitySharingEnabled: r.activity_sharing_enabled,
     deletionRequestedAt: r.deletion_requested_at ?? undefined,

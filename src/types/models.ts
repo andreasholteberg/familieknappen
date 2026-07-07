@@ -36,6 +36,8 @@ export interface User {
   name: string;
   role: UserRole;
   phone?: string;
+  /** Valgfri ekstern videolenke (FaceTime/Meet/Whereby …) familien kan ringe på. */
+  videoCallUrl?: string;
   email?: string;
   /** Om brukeren deler aktivitetsstatus med gruppa (samtykke). */
   activitySharingEnabled?: boolean;

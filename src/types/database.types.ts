@@ -23,6 +23,7 @@ export type Database = {
           name: string;
           role: AppRole;
           phone: string | null;
+          video_call_url: string | null;
           email: string | null;
           activity_sharing_enabled: boolean;
           deletion_requested_at: string | null;
@@ -38,6 +39,7 @@ export type Database = {
           name?: string;
           role?: AppRole;
           phone?: string | null;
+          video_call_url?: string | null;
           email?: string | null;
           activity_sharing_enabled?: boolean;
           deletion_requested_at?: string | null;
@@ -53,6 +55,7 @@ export type Database = {
           name?: string;
           role?: AppRole;
           phone?: string | null;
+          video_call_url?: string | null;
           email?: string | null;
           activity_sharing_enabled?: boolean;
           deletion_requested_at?: string | null;

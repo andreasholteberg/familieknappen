@@ -9,6 +9,7 @@ import { Screen } from '@/components/Screen';
 import { selectRelativeMembers, useAppStore } from '@/store/useAppStore';
 import { colors, fontSize, radius, shadow, spacing } from '@/theme/theme';
 import { callPhone, telUrl } from '@/utils/phone';
+import { normalizeVideoUrl, openVideoCall } from '@/utils/video';
 
 /**
  * «Min familie» (F-025): en varm flate med store kontaktkort per pårørende.
@@ -45,6 +46,7 @@ export default function MyFamily() {
         const u = users.find((x) => x.id === m.userId);
         if (!u) return null;
         const canCall = !!telUrl(u.phone);
+        const canVideo = !!normalizeVideoUrl(u.videoCallUrl);
         return (
           <View key={m.id} style={[styles.card, shadow.card]}>
             <View style={styles.cardHead}>
@@ -79,6 +81,17 @@ export default function MyFamily() {
                 <Text style={styles.actionText}>💬 Spør om hjelp</Text>
               </Pressable>
             </View>
+
+            {canVideo ? (
+              <Pressable
+                style={styles.videoBtn}
+                accessibilityRole="button"
+                accessibilityLabel={`Videosamtale med ${u.name}`}
+                onPress={() => void openVideoCall(u.videoCallUrl)}
+              >
+                <Text style={styles.videoBtnText}>📹 Videosamtale</Text>
+              </Pressable>
+            ) : null}
           </View>
         );
       })}
@@ -110,4 +123,12 @@ const styles = StyleSheet.create({
   callBtn: { backgroundColor: colors.calmGreen },
   askBtn: { backgroundColor: colors.brand },
   actionText: { color: colors.white, fontSize: fontSize.lg, fontWeight: '800' },
+  videoBtn: {
+    marginTop: spacing(3),
+    alignItems: 'center',
+    paddingVertical: spacing(4),
+    borderRadius: radius.m,
+    backgroundColor: '#50608f',
+  },
+  videoBtnText: { color: colors.white, fontSize: fontSize.lg, fontWeight: '800' },
 });

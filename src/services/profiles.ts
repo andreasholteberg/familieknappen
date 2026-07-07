@@ -29,6 +29,15 @@ export async function setPhone(userId: string, phone: string | null): Promise<vo
   if (error) throw error;
 }
 
+/** Oppdater egen videolenke (Nivå 2 – ekstern lenke; RLS: kun egen profil). */
+export async function setVideoCallUrl(userId: string, videoCallUrl: string | null): Promise<void> {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ video_call_url: videoCallUrl })
+    .eq('id', userId);
+  if (error) throw error;
+}
+
 /** Be om sletting av egen konto (30 dagers angrefrist). Returnerer tidspunkt. */
 export async function requestAccountDeletion(): Promise<string> {
   const { data, error } = await supabase.rpc('request_account_deletion');

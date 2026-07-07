@@ -152,6 +152,7 @@ interface AppState {
   updateEvent: (id: string, patch: Partial<CalendarEvent>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   setMyPhone: (phone: string | null) => Promise<void>;
+  setMyVideoCallUrl: (videoCallUrl: string | null) => Promise<void>;
   setMyName: (name: string) => Promise<void>;
   addPhoto: (input: { localUri: string; caption?: string }) => Promise<void>;
   deletePhoto: (photo: FamilyPhoto) => Promise<void>;
@@ -576,6 +577,17 @@ export const useAppStore = create<AppState>((set, get) => ({
     await svc.profiles.setPhone(uid, phone);
     set((s) => ({
       users: s.users.map((u) => (u.id === uid ? { ...u, phone: phone ?? undefined } : u)),
+    }));
+  },
+
+  setMyVideoCallUrl: async (videoCallUrl) => {
+    const uid = get().currentUserId;
+    if (!uid) throw new Error('Ikke innlogget');
+    await svc.profiles.setVideoCallUrl(uid, videoCallUrl);
+    set((s) => ({
+      users: s.users.map((u) =>
+        u.id === uid ? { ...u, videoCallUrl: videoCallUrl ?? undefined } : u,
+      ),
     }));
   },
 
