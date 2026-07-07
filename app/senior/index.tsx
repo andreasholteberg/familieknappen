@@ -36,7 +36,7 @@ export default function SeniorHome() {
   const latestOpen = openRequests[0];
   const isEscalated = latestOpen?.status === 'ESCALATED';
   const statusText = !latestOpen
-    ? 'Familien din ser at alt er bra.'
+    ? 'Du kan spørre familien når du vil.'
     : isEscalated
       ? 'Vi prøver å få tak i familien.'
       : 'Familien har fått spørsmålet ditt.';
@@ -87,12 +87,32 @@ export default function SeniorHome() {
         Er du usikker på noe? Trykk «Spør familien».{'\n'}Vent på svar før du gjør noe.
       </Text>
 
-      <Pressable style={styles.privacyLink} onPress={() => router.push('/senior/family')}>
-        <Text style={styles.privacyLinkText}>Min familie</Text>
+      <Text style={styles.shortcutsHeader}>Det kan også være nyttig</Text>
+
+      <Pressable
+        style={styles.shortcut}
+        accessibilityRole="button"
+        accessibilityLabel="Min familie. Se hvem du kan ringe eller spørre."
+        onPress={() => router.push('/senior/family')}
+      >
+        <Text style={styles.shortcutIcon}>👪</Text>
+        <View style={styles.shortcutBody}>
+          <Text style={styles.shortcutLabel}>Min familie</Text>
+          <Text style={styles.shortcutHint}>Se hvem du kan ringe eller spørre.</Text>
+        </View>
       </Pressable>
 
-      <Pressable style={styles.privacyLink} onPress={() => router.push('/senior/history')}>
-        <Text style={styles.privacyLinkText}>Tidligere svar</Text>
+      <Pressable
+        style={styles.shortcut}
+        accessibilityRole="button"
+        accessibilityLabel="Tidligere samtaler. Se svar du har fått før."
+        onPress={() => router.push('/senior/history')}
+      >
+        <Text style={styles.shortcutIcon}>💬</Text>
+        <View style={styles.shortcutBody}>
+          <Text style={styles.shortcutLabel}>Tidligere samtaler</Text>
+          <Text style={styles.shortcutHint}>Se svar du har fått før.</Text>
+        </View>
       </Pressable>
 
       <Pressable style={styles.privacyLink} onPress={() => router.push('/senior/privacy')}>
@@ -126,6 +146,27 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
   },
+  shortcutsHeader: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    color: colors.inkFaint,
+    marginTop: spacing(6),
+    marginBottom: spacing(2),
+  },
+  shortcut: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing(4),
+    backgroundColor: colors.surfaceSoft,
+    borderRadius: radius.m,
+    paddingVertical: spacing(5),
+    paddingHorizontal: spacing(5),
+    marginBottom: spacing(3),
+  },
+  shortcutIcon: { fontSize: 30 },
+  shortcutBody: { flex: 1 },
+  shortcutLabel: { fontSize: fontSize.body, fontWeight: '800', color: colors.ink },
+  shortcutHint: { fontSize: fontSize.md, color: colors.inkSoft, marginTop: spacing(1), lineHeight: 22 },
   privacyLink: { alignItems: 'center', paddingVertical: spacing(4), marginTop: spacing(2) },
   privacyLinkText: { fontSize: fontSize.md, color: colors.brandDark, textDecorationLine: 'underline' },
 });

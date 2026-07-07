@@ -50,7 +50,7 @@ export default function RelativeDashboard() {
       ? `${senior?.name ?? 'Senior'} venter på svar nå.`
       : answeredToday > 0
         ? `${senior?.name ?? 'Senior'} har fått hjelp i dag.`
-        : 'Alt er rolig.';
+        : 'Ingen forespørsler akkurat nå.';
 
   return (
     <Screen>
